@@ -6,7 +6,7 @@ Engineered to support scientific, Earth-observation-grounded risk analytics adhe
 
 ---
 
-## 🌟 Key Features
+##  Key Features
 
 - **Strict Deterministic Analytics:** Decouples quantitative calculations from language models. The LLM explains and summarizes, but never hallucinates mathematical risk indices.
 - **RFC 7946 GeoJSON Standard:** Outputs valid `FeatureCollection` geometries with analytical polygon coordinates, hazard classifications, and centroid telemetry.
@@ -15,7 +15,7 @@ Engineered to support scientific, Earth-observation-grounded risk analytics adhe
 
 ---
 
-## 🛠️ MCP Tool Definitions
+##  MCP Tool Definitions
 
 ### 1. `calculate_flood_vulnerability`
 Calculates a composite flood vulnerability index (0 to 100) based on elevation, precipitation, and soil percolation.
@@ -42,7 +42,7 @@ Partitions a target geographic bounding box into spatial cells and generates a c
 
 ---
 
-## 📂 Project Architecture
+##  Project Architecture
 
 ```text
 geospatial-risk-mcp-server/
@@ -59,7 +59,7 @@ geospatial-risk-mcp-server/
 
 ---
 
-## 🔌 Client Integration
+##  Client Integration
 
 ### 1. Claude Desktop / Cursor MCP Configuration
 Add this server to your `claude_desktop_config.json` or cursor MCP settings:
@@ -86,7 +86,7 @@ docker run -i --rm geospatial-risk-mcp
 
 ---
 
-## 🧪 Automated Testing
+##  Automated Testing
 
 Run the test suite to verify schema validation and deterministic calculations:
 
@@ -96,5 +96,5 @@ pytest tests/ -v
 
 ---
 
-## 📄 License
+##  License
 MIT License
