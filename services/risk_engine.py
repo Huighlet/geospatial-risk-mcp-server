@@ -113,10 +113,17 @@ class RiskEngine:
         }
 
     @staticmethod
-    def generate_bounding_box_risk_geojson(bbox: BoundingBox, hazard_type: str = "flood") -> GeoJSONFeatureCollection:
+    def generate_bounding_box_risk_geojson(
+        bbox: BoundingBox, 
+        hazard_type: str = "flood",
+        precipitation_mm: float = 135.0,
+        elevation_meters: float = 2.5,
+        soil_rate: float = 0.35
+    ) -> GeoJSONFeatureCollection:
         """
         Generates a valid GeoJSON FeatureCollection dividing a target geographic
-        bounding box into analytical grid polygons with computed risk attributes.
+        bounding box into analytical grid polygons with computed risk attributes
+        directly driven by the simulation slider values.
         """
         lat_step = (bbox.max_lat - bbox.min_lat) / 2.0
         lon_step = (bbox.max_lon - bbox.min_lon) / 2.0
@@ -133,19 +140,29 @@ class RiskEngine:
 
                 polygon_coords = [
                     [
-                        [c_min_lon, c_min_lat],
-                        [c_max_lon, c_min_lat],
-                        [c_max_lon, c_max_lat],
-                        [c_min_lon, c_max_lat],
-                        [c_min_lon, c_min_lat],
+                        [round(c_min_lon, 5), round(c_min_lat, 5)],
+                        [round(c_max_lon, 5), round(c_min_lat, 5)],
+                        [round(c_max_lon, 5), round(c_max_lat, 5)],
+                        [round(c_min_lon, 5), round(c_max_lat, 5)],
+                        [round(c_min_lon, 5), round(c_min_lat, 5)],
                     ]
                 ]
 
-                # Deterministic pseudo-risk score for cell centroid
                 centroid_lat = (c_min_lat + c_max_lat) / 2.0
                 centroid_lon = (c_min_lon + c_max_lon) / 2.0
-                computed_score = round(40.0 + ((math.sin(centroid_lat) + math.cos(centroid_lon)) * 25.0), 2)
-                severity = "HIGH" if computed_score > 60 else "MODERATE"
+
+                # Slight localized topographic variance across grid cells (+/- 3m)
+                cell_elevation = max(0.0, elevation_meters + ((i - 0.5) * 2.5) + ((j - 0.5) * 1.5))
+                
+                # Calculate deterministic flood index for this specific cell
+                cell_input = FloodVulnerabilityInput(
+                    latitude=centroid_lat,
+                    longitude=centroid_lon,
+                    elevation_meters=cell_elevation,
+                    precipitation_mm=precipitation_mm,
+                    soil_absorption_rate=soil_rate
+                )
+                cell_result = RiskEngine.calculate_flood_index(cell_input)
 
                 features.append(
                     GeoJSONFeature(
@@ -154,8 +171,11 @@ class RiskEngine:
                         properties={
                             "cell_id": f"ZONE_{cell_id:03d}",
                             "hazard_type": hazard_type.lower(),
-                            "risk_score": abs(computed_score),
-                            "severity": severity,
+                            "risk_score": cell_result["flood_vulnerability_index"],
+                            "severity": cell_result["severity_level"],
+                            "elevation_m": round(cell_elevation, 1),
+                            "precipitation_mm": precipitation_mm,
+                            "guidance": cell_result["operational_guidance"],
                             "centroid": {"lat": round(centroid_lat, 4), "lon": round(centroid_lon, 4)},
                         },
                     )
