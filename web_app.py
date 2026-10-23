@@ -33,39 +33,46 @@ HTML_DASHBOARD = """<!DOCTYPE html>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    #map { height: 480px; width: 100%; border-radius: 1rem; }
-    .glass { background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.12); }
+    #map { height: 490px; width: 100%; border-radius: 0.75rem; }
+    .panel { background: #0b1120; border: 1px solid #1e293b; }
+    .stat-box { background: #070d19; border: 1px solid #1e293b; }
     .scrollbar-thin::-webkit-scrollbar { width: 5px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-emerald-500 selection:text-slate-950">
 
   <!-- Header -->
-  <header class="h-16 border-b border-slate-800 px-5 flex items-center justify-between glass sticky top-0 z-50">
+  <header class="h-16 border-b border-slate-800 px-6 flex items-center justify-between bg-slate-950/95 sticky top-0 z-50">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-emerald-500/20">
-        S
+      <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
       </div>
       <div>
-        <h1 class="font-bold text-base md:text-lg text-white tracking-wide">SERVIR Global Risk Platform</h1>
-        <p class="text-[11px] text-slate-400">Earth Observation Decision Support & FastMCP Multi-Hazard Engine</p>
+        <div class="flex items-center gap-2">
+          <h1 class="font-bold text-sm md:text-base text-white tracking-tight">SERVIR Global Risk Platform</h1>
+          <span class="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700">DSS v2.4</span>
+        </div>
+        <p class="text-[11px] text-slate-400 font-medium">Earth Observation Decision Support · Rapid Multi-Hazard Analytics</p>
       </div>
     </div>
     
     <!-- Hazard Mode Switcher -->
-    <div class="flex items-center bg-slate-900 border border-slate-700 p-1 rounded-xl">
-      <button id="mode-flood-btn" onclick="setHazardMode('flood')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-white shadow-md">
-        🌊 Flood Inundation
+    <div class="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-lg">
+      <button id="mode-flood-btn" onclick="setHazardMode('flood')" class="px-3 py-1 rounded-md text-xs font-semibold transition bg-emerald-600 text-white shadow-sm flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+        <span>Flood Inundation</span>
       </button>
-      <button id="mode-drought-btn" onclick="setHazardMode('drought')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
-        ☀️ Agricultural Drought
+      <button id="mode-drought-btn" onclick="setHazardMode('drought')" class="px-3 py-1 rounded-md text-xs font-semibold transition text-slate-400 hover:text-slate-200 flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-transparent"></span>
+        <span>Agricultural Drought</span>
       </button>
     </div>
 
     <div class="hidden sm:flex items-center gap-3">
-      <a href="https://github.com/Huighlet/geospatial-risk-mcp-server" target="_blank" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
-        GitHub Source
+      <a href="https://github.com/Huighlet/geospatial-risk-mcp-server" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path></svg>
+        <span>GitHub Repository</span>
       </a>
     </div>
   </header>
@@ -73,66 +80,66 @@ HTML_DASHBOARD = """<!DOCTYPE html>
   <!-- Main Grid -->
   <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4">
     
-    <!-- Left Sidebar: Controls, Scenarios & AI -->
+    <!-- Left Sidebar: Controls, Scenarios & Advisory -->
     <div class="lg:col-span-5 flex flex-col gap-3.5 overflow-y-auto max-h-[calc(100vh-80px)] pr-1 scrollbar-thin">
       
-      <!-- Location Search & Fast Hub Pills -->
-      <div class="glass p-3.5 rounded-2xl flex flex-col gap-2.5">
+      <!-- Target Location Domain & Regional Observatories -->
+      <div class="panel p-3.5 rounded-xl flex flex-col gap-2.5">
         <div class="flex items-center justify-between">
-          <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Target Location Search</label>
-          <span id="search-status" class="text-[11px] text-emerald-400 font-mono">Global Geocoder Active</span>
+          <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Target Geographic Domain</label>
+          <span id="search-status" class="text-[10px] text-emerald-400 font-mono">Nominatim Geocoder API · Online</span>
         </div>
         
         <div class="flex gap-2">
           <input 
             type="text" 
             id="search-input" 
-            placeholder="Type city or place (e.g. Keta, Accra, Nairobi, Bangkok)..." 
-            class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            placeholder="Search city, province, or coordinates..." 
+            class="flex-1 bg-slate-900 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             onkeydown="if(event.key === 'Enter') searchLocation()"
           />
           <button 
             onclick="searchLocation()" 
-            class="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition">
-            Find
+            class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition">
+            Locate
           </button>
         </div>
 
-        <!-- Quick Hub Pills (Replaces clunky dropdown) -->
+        <!-- Regional Observatories -->
         <div class="flex flex-wrap gap-1.5 pt-1">
-          <span class="text-[10px] text-slate-400 self-center mr-1">Hubs:</span>
-          <button onclick="jumpToHub('keta')" class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">🇬🇭 Keta</button>
-          <button onclick="jumpToHub('bangkok')" class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">🇹🇭 Bangkok</button>
-          <button onclick="jumpToHub('kenya')" class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">🇰🇪 Nairobi</button>
-          <button onclick="jumpToHub('vietnam')" class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">🇻🇳 Mekong</button>
-          <button onclick="jumpToHub('philippines')" class="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">🇵🇭 Manila</button>
+          <span class="text-[10px] font-bold text-slate-500 self-center uppercase tracking-wider mr-1">Observatories:</span>
+          <button onclick="jumpToHub('keta')" class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition">Keta (West Africa)</button>
+          <button onclick="jumpToHub('bangkok')" class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition">Bangkok (Chao Phraya)</button>
+          <button onclick="jumpToHub('kenya')" class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition">Nairobi (Rift Valley)</button>
+          <button onclick="jumpToHub('vietnam')" class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition">Mekong Delta</button>
+          <button onclick="jumpToHub('philippines')" class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition">Manila Bay</button>
         </div>
       </div>
 
       <!-- Climate Change Scenario Selectors (SERVIR Requirement) -->
-      <div class="glass p-3.5 rounded-2xl flex flex-col gap-2">
-        <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Climate Change Scenario Comparison</label>
+      <div class="panel p-3.5 rounded-xl flex flex-col gap-2">
+        <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Climate Change Scenario Projections</label>
         <div class="grid grid-cols-3 gap-2">
-          <button onclick="applyScenario('baseline')" class="px-2 py-2 rounded-xl text-center bg-slate-900 hover:bg-slate-800 border border-slate-700 transition flex flex-col items-center">
-            <span class="text-[10px] font-bold text-slate-400 uppercase">Baseline</span>
-            <span class="text-xs font-bold text-emerald-400 mt-0.5">10-Yr Storm</span>
-            <span class="text-[9px] text-slate-500">45 mm</span>
+          <button onclick="applyScenario('baseline')" class="px-2.5 py-2 rounded-lg text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 transition flex flex-col">
+            <span class="text-[10px] font-semibold text-slate-400">Baseline</span>
+            <span class="text-xs font-bold text-emerald-400 mt-0.5">10-Yr Return</span>
+            <span class="text-[10px] text-slate-500 font-mono mt-0.5">45 mm</span>
           </button>
-          <button onclick="applyScenario('monsoon')" class="px-2 py-2 rounded-xl text-center bg-slate-900 hover:bg-slate-800 border border-slate-700 transition flex flex-col items-center">
-            <span class="text-[10px] font-bold text-slate-400 uppercase">2030 (+1.5°C)</span>
-            <span class="text-xs font-bold text-amber-400 mt-0.5">Intense Monsoon</span>
-            <span class="text-[9px] text-slate-500">120 mm</span>
+          <button onclick="applyScenario('monsoon')" class="px-2.5 py-2 rounded-lg text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 transition flex flex-col">
+            <span class="text-[10px] font-semibold text-slate-400">2030 (+1.5°C)</span>
+            <span class="text-xs font-bold text-amber-400 mt-0.5">SSP2-4.5</span>
+            <span class="text-[10px] text-slate-500 font-mono mt-0.5">120 mm</span>
           </button>
-          <button onclick="applyScenario('extreme')" class="px-2 py-2 rounded-xl text-center bg-slate-900 hover:bg-slate-800 border border-slate-700 transition flex flex-col items-center">
-            <span class="text-[10px] font-bold text-slate-400 uppercase">2050 (RCP 8.5)</span>
-            <span class="text-xs font-bold text-red-400 mt-0.5">100-Yr Disaster</span>
-            <span class="text-[9px] text-slate-500">210 mm</span>
+          <button onclick="applyScenario('extreme')" class="px-2.5 py-2 rounded-lg text-left bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 transition flex flex-col">
+            <span class="text-[10px] font-semibold text-slate-400">2050 (Extreme)</span>
+            <span class="text-xs font-bold text-red-400 mt-0.5">SSP5-8.5</span>
+            <span class="text-[10px] text-slate-500 font-mono mt-0.5">210 mm</span>
           </button>
         </div>
       </div>
 
       <!-- Simulation Sliders (Dynamic for Flood vs Drought) -->
-      <div class="glass p-3.5 rounded-2xl flex flex-col gap-3">
+      <div class="panel p-3.5 rounded-xl flex flex-col gap-3">
         <div class="border-b border-slate-800 pb-2 flex items-center justify-between">
           <h2 class="font-bold text-xs text-slate-200 uppercase tracking-wider" id="slider-panel-title">Hydrologic Parameters</h2>
           <span class="text-[10px] text-emerald-400 font-mono" id="current-coords">Lat: 5.92 | Lon: 0.99</span>
@@ -143,7 +150,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">24h Rainfall Forecast</span>
-              <span id="val-rain" class="text-emerald-400 font-bold">135 mm</span>
+              <span id="val-rain" class="text-emerald-400 font-mono font-bold">135 mm</span>
             </div>
             <input type="range" id="input-rain" min="0" max="250" value="135" class="w-full accent-emerald-500 cursor-pointer" oninput="updateValuesAndTrigger()">
           </div>
@@ -151,7 +158,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">Surface Elevation (Above Sea Level)</span>
-              <span id="val-elev" class="text-cyan-400 font-bold">2.5 m</span>
+              <span id="val-elev" class="text-cyan-400 font-mono font-bold">2.5 m</span>
             </div>
             <input type="range" id="input-elev" min="0" max="100" step="0.5" value="2.5" class="w-full accent-cyan-500 cursor-pointer" oninput="updateValuesAndTrigger()">
           </div>
@@ -159,7 +166,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">Soil Percolation Rate</span>
-              <span id="val-soil" class="text-indigo-400 font-bold">0.35</span>
+              <span id="val-soil" class="text-indigo-400 font-mono font-bold">0.35</span>
             </div>
             <input type="range" id="input-soil" min="0.0" max="1.0" step="0.05" value="0.35" class="w-full accent-indigo-500 cursor-pointer" oninput="updateValuesAndTrigger()">
           </div>
@@ -170,7 +177,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">Topsoil Moisture Content</span>
-              <span id="val-moist" class="text-amber-400 font-bold">18 %</span>
+              <span id="val-moist" class="text-amber-400 font-mono font-bold">18 %</span>
             </div>
             <input type="range" id="input-moist" min="0" max="100" value="18" class="w-full accent-amber-500 cursor-pointer" oninput="updateValuesAndTrigger()">
             <div class="flex justify-between text-[10px] text-slate-500 mt-0.5"><span>0% (Arid)</span><span>50% (Adequate)</span><span>100% (Saturated)</span></div>
@@ -179,7 +186,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">Land Surface Temperature</span>
-              <span id="val-temp" class="text-red-400 font-bold">38 °C</span>
+              <span id="val-temp" class="text-red-400 font-mono font-bold">38 °C</span>
             </div>
             <input type="range" id="input-temp" min="15" max="55" value="38" class="w-full accent-red-500 cursor-pointer" oninput="updateValuesAndTrigger()">
           </div>
@@ -187,41 +194,42 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1">
               <span class="text-slate-300">Vegetation Health Index (NDVI)</span>
-              <span id="val-ndvi" class="text-emerald-400 font-bold">0.24</span>
+              <span id="val-ndvi" class="text-emerald-400 font-mono font-bold">0.24</span>
             </div>
             <input type="range" id="input-ndvi" min="-0.2" max="1.0" step="0.02" value="0.24" class="w-full accent-emerald-500 cursor-pointer" oninput="updateValuesAndTrigger()">
           </div>
         </div>
       </div>
 
-      <!-- Live Computed Risk Metrics & AI Explain Button -->
-      <div id="result-card" class="glass p-3.5 rounded-2xl flex flex-col gap-3">
+      <!-- Live Computed Risk Metrics & Advisory Actions -->
+      <div id="result-card" class="panel p-3.5 rounded-xl flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider" id="metric-title">Computed Flood Vulnerability</span>
-          <div id="risk-badge" class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/40">
+          <div id="risk-badge" class="px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/30">
             HIGH
           </div>
         </div>
         
         <div class="flex items-baseline gap-2">
-          <div class="text-4xl font-black text-white" id="risk-score">69.8</div>
-          <div class="text-xs text-slate-400 font-semibold" id="scale-label">/ 100</div>
+          <div class="text-3xl font-extrabold text-white font-mono" id="risk-score">69.8</div>
+          <div class="text-xs text-slate-400 font-medium" id="scale-label">/ 100 Index</div>
         </div>
 
-        <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 leading-relaxed" id="risk-action">
+        <div class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 text-xs text-slate-300 leading-relaxed font-sans" id="risk-action">
           Activate municipal drainage systems and issue public hazard alerts.
         </div>
 
         <div class="grid grid-cols-2 gap-2 pt-1">
-          <!-- Bounded AI Briefing Button -->
-          <button onclick="generateAIBriefing()" class="py-2.5 px-3 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-md transition flex items-center justify-center gap-1.5">
-            <span>✨ Explain with AI</span>
+          <!-- Operational SITREP Briefing Button -->
+          <button onclick="generateSITREPBriefing()" class="py-2 px-3 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center justify-center gap-1.5 shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span>Operational SITREP</span>
           </button>
 
           <!-- Export GeoJSON Layer -->
-          <button onclick="downloadGeoJSON()" class="py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 transition flex items-center justify-center gap-1.5">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            <span>Export GeoJSON</span>
+          <button onclick="downloadGeoJSON()" class="py-2 px-3 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span>Export RFC 7946</span>
           </button>
         </div>
       </div>
@@ -232,26 +240,26 @@ HTML_DASHBOARD = """<!DOCTYPE html>
     <div class="lg:col-span-7 flex flex-col gap-3.5">
       
       <!-- Interactive Map Card -->
-      <div class="glass p-2 rounded-2xl relative shadow-2xl overflow-hidden">
+      <div class="panel p-2 rounded-xl relative shadow-xl overflow-hidden">
         <div id="map"></div>
         
         <!-- Map Legend -->
-        <div class="absolute bottom-5 right-5 z-[1000] glass px-3.5 py-2.5 rounded-xl shadow-2xl flex flex-col gap-1.5 text-xs border border-slate-700/60">
-          <div class="font-bold text-slate-300 text-[10px] uppercase tracking-wider border-b border-slate-700/60 pb-1">
+        <div class="absolute bottom-5 right-5 z-[1000] panel px-3 py-2 rounded-lg shadow-xl flex flex-col gap-1.5 text-xs border border-slate-700/80">
+          <div class="font-bold text-slate-300 text-[10px] uppercase tracking-wider border-b border-slate-700/80 pb-1">
             Hazard Severity Scale
           </div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-red-500 shadow-sm shadow-red-500/50"></span> <span class="text-[11px]">Critical (&ge;75)</span></div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-orange-500 shadow-sm shadow-orange-500/50"></span> <span class="text-[11px]">High (50-74)</span></div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-amber-400 shadow-sm shadow-amber-400/50"></span> <span class="text-[11px]">Moderate (25-49)</span></div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-emerald-500 shadow-sm shadow-emerald-500/50"></span> <span class="text-[11px]">Low (&lt;25)</span></div>
+          <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm bg-red-500"></span> <span class="text-[11px] text-slate-300">Critical (&ge;75)</span></div>
+          <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm bg-orange-500"></span> <span class="text-[11px] text-slate-300">High (50-74)</span></div>
+          <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm bg-amber-400"></span> <span class="text-[11px] text-slate-300">Moderate (25-49)</span></div>
+          <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span> <span class="text-[11px] text-slate-300">Low (&lt;25)</span></div>
         </div>
       </div>
 
       <!-- Live Vulnerability Response Chart (Chart.js) -->
-      <div class="glass p-3.5 rounded-2xl">
+      <div class="panel p-3.5 rounded-xl">
         <div class="flex items-center justify-between mb-2">
           <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider" id="chart-title">Topographic Sensitivity Response Curve</h3>
-          <span class="text-[11px] text-slate-400" id="chart-subtitle">Vulnerability vs. Rainfall (0 - 250mm)</span>
+          <span class="text-[11px] text-slate-400 font-mono" id="chart-subtitle">Vulnerability vs. Rainfall (0 - 250mm)</span>
         </div>
         <div class="h-32">
           <canvas id="riskChart"></canvas>
@@ -262,21 +270,24 @@ HTML_DASHBOARD = """<!DOCTYPE html>
 
   </div>
 
-  <!-- Bounded AI Situation Report (Modal) -->
+  <!-- Operational Situation Report (Modal) -->
   <div id="ai-modal" class="fixed inset-0 z-[2000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="glass max-w-2xl w-full p-6 rounded-3xl border border-emerald-500/40 shadow-2xl flex flex-col gap-4 animate-in fade-in duration-200">
+    <div class="panel max-w-2xl w-full p-6 rounded-2xl border border-slate-700 shadow-2xl flex flex-col gap-4 animate-in fade-in duration-150">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <h3 class="font-bold text-white text-base" id="ai-modal-title">SERVIR Bounded AI Situation Report</h3>
+        <div class="flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <div>
+            <h3 class="font-bold text-white text-sm md:text-base" id="ai-modal-title">SERVIR Rapid Disaster Assessment</h3>
+            <p class="text-[11px] text-slate-400">UN Sendai Framework Rapid Assessment Protocol</p>
+          </div>
         </div>
-        <button onclick="closeAIModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+        <button onclick="closeAIModal()" class="text-slate-400 hover:text-white text-base font-bold px-2 py-1 rounded hover:bg-slate-800">✕</button>
       </div>
 
       <div class="space-y-3 text-xs leading-relaxed max-h-[60vh] overflow-y-auto pr-1 scrollbar-thin">
-        <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800">
+        <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
           <span class="text-slate-400 uppercase font-bold text-[10px] block">Readiness Priority</span>
-          <div class="text-sm font-extrabold text-emerald-400 mt-0.5" id="ai-priority">--</div>
+          <div class="text-sm font-extrabold text-emerald-400 font-mono mt-0.5" id="ai-priority">--</div>
         </div>
 
         <div>
@@ -285,23 +296,23 @@ HTML_DASHBOARD = """<!DOCTYPE html>
         </div>
 
         <div class="grid grid-cols-2 gap-3 pt-1">
-          <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+          <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
             <span class="text-slate-400 uppercase font-bold text-[10px] block mb-1">Critical Infrastructure Risk</span>
             <p class="text-slate-300" id="ai-infra">--</p>
           </div>
-          <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+          <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
             <span class="text-slate-400 uppercase font-bold text-[10px] block mb-1">Agricultural & Livelihood Impact</span>
             <p class="text-slate-300" id="ai-agri">--</p>
           </div>
         </div>
 
-        <div class="text-[10px] text-slate-500 italic border-t border-slate-800 pt-2" id="ai-assurance">
-          Sendai Framework compliant. Deterministic calculation source.
+        <div class="text-[10px] text-slate-500 border-t border-slate-800 pt-2" id="ai-assurance">
+          Standard: UN Sendai Framework for Disaster Risk Reduction (2015–2030) · Rapid Response Protocol.
         </div>
       </div>
 
-      <button onclick="closeAIModal()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
-        Close Advisory
+      <button onclick="closeAIModal()" class="w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition">
+        Close Briefing
       </button>
     </div>
   </div>
@@ -437,23 +448,23 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       const chartSubtitle = document.getElementById('chart-subtitle');
 
       if (mode === 'drought') {
-        droughtBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-white shadow-md";
-        floodBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+        droughtBtn.className = "px-3 py-1 rounded-md text-xs font-semibold transition bg-amber-600 text-white shadow-sm flex items-center gap-1.5";
+        floodBtn.className = "px-3 py-1 rounded-md text-xs font-semibold transition text-slate-400 hover:text-slate-200 flex items-center gap-1.5";
         floodControls.classList.add('hidden');
         droughtControls.classList.remove('hidden');
         panelTitle.innerText = "Agro-Meteorological Parameters";
         metricTitle.innerText = "Computed Drought Index";
-        scaleLabel.innerText = "/ 100";
+        scaleLabel.innerText = "/ 100 Index";
         if (chartTitle) chartTitle.innerText = "Agro-Climatic Sensitivity Response Curve";
         if (chartSubtitle) chartSubtitle.innerText = "Drought Index vs. Topsoil Moisture (0 - 100%)";
       } else {
-        floodBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-white shadow-md";
-        droughtBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
+        floodBtn.className = "px-3 py-1 rounded-md text-xs font-semibold transition bg-emerald-600 text-white shadow-sm flex items-center gap-1.5";
+        droughtBtn.className = "px-3 py-1 rounded-md text-xs font-semibold transition text-slate-400 hover:text-slate-200 flex items-center gap-1.5";
         droughtControls.classList.add('hidden');
         floodControls.classList.remove('hidden');
         panelTitle.innerText = "Hydrologic Parameters";
         metricTitle.innerText = "Computed Flood Vulnerability";
-        scaleLabel.innerText = "/ 100";
+        scaleLabel.innerText = "/ 100 Index";
         if (chartTitle) chartTitle.innerText = "Topographic Sensitivity Response Curve";
         if (chartSubtitle) chartSubtitle.innerText = "Vulnerability vs. Rainfall (0 - 250mm)";
       }
@@ -539,13 +550,13 @@ HTML_DASHBOARD = """<!DOCTYPE html>
         const badge = document.getElementById('risk-badge');
         badge.innerText = severity;
         if (severity === 'CRITICAL') {
-          badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/50 animate-pulse';
+          badge.className = 'px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/30';
         } else if (severity === 'HIGH') {
-          badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/50';
+          badge.className = 'px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/30';
         } else if (severity === 'MODERATE') {
-          badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/50';
+          badge.className = 'px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30';
         } else {
-          badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/50';
+          badge.className = 'px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
         }
 
         // Draw 16-cell GeoJSON Grid
@@ -726,15 +737,15 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       downloadAnchor.remove();
     }
 
-    // AI Bounded Situation Report
-    async function generateAIBriefing() {
+    // Operational SITREP Rapid Disaster Assessment Generator
+    async function generateSITREPBriefing() {
       const score = parseFloat(document.getElementById('risk-score').innerText) || 50;
       const severity = document.getElementById('risk-badge').innerText || "MODERATE";
       const rain = parseFloat(document.getElementById('input-rain').value);
       const elev = parseFloat(document.getElementById('input-elev').value);
       const soil = parseFloat(document.getElementById('input-soil').value);
 
-      const res = await fetch('/api/ai-briefing', {
+      const res = await fetch('/api/sitrep-briefing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -765,6 +776,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
 
       document.getElementById('ai-modal').classList.remove('hidden');
     }
+    const generateAIBriefing = generateSITREPBriefing;
 
     function closeAIModal() {
       document.getElementById('ai-modal').classList.add('hidden');
@@ -834,7 +846,7 @@ async def api_bounding_box(request: Request):
     )
     return JSONResponse(geojson_collection.model_dump())
 
-async def api_ai_briefing(request: Request):
+async def api_sitrep_briefing(request: Request):
     body = await request.json()
     hazard = body.get("hazard", "flood")
     score = float(body.get("score", 50.0))
@@ -861,13 +873,14 @@ app = Starlette(
         Route("/api/flood-risk", api_flood_risk, methods=["POST"]),
         Route("/api/drought-risk", api_drought_risk, methods=["POST"]),
         Route("/api/bounding-box-geojson", api_bounding_box, methods=["POST"]),
-        Route("/api/ai-briefing", api_ai_briefing, methods=["POST"]),
+        Route("/api/sitrep-briefing", api_sitrep_briefing, methods=["POST"]),
+        Route("/api/ai-briefing", api_sitrep_briefing, methods=["POST"]),
     ]
 )
 
 if __name__ == "__main__":
     print("\n=======================================================")
-    print("[*] SERVIR Advanced Climate Risk Platform Starting...")
+    print("[*] SERVIR Decision Support System (DSS) Starting...")
     print(" -> Dashboard URL: http://localhost:8000")
     print("=======================================================\n")
     uvicorn.run(app, host="127.0.0.1", port=8000)
