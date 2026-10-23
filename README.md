@@ -40,7 +40,7 @@ Engineered to support scientific, Earth-observation-grounded risk analytics adhe
 
 | Tool Name | Input Parameters | Output |
 | :--- | :--- | :--- |
-| **`calculate_flood_vulnerability`** | `latitude`, `longitude`, `elevation_meters`, `precipitation_mm`, `soil_absorption_rate` | Deterministic index (0–100), severity (`LOW` to `CRITICAL`), operational guidance |
+| **`calculate_flood_vulnerability`** | `latitude`, `longitude`, `elevation_meters`, `precipitation_mm`, `soil_absorption_rate` | Deterministic index (0 to 100), severity (`LOW` to `CRITICAL`), operational guidance |
 | **`evaluate_drought_index`** | `soil_moisture_pct`, `surface_temp_celsius`, `baseline_ndvi` | Composite drought score, classification (`EXTREME_DROUGHT` to `NORMAL`) |
 | **`query_bounding_box_risk`** | `min_lat`, `min_lon`, `max_lat`, `max_lon`, `hazard_type` | RFC 7946 GeoJSON FeatureCollection with analytical polygon coordinates |
 
@@ -50,20 +50,20 @@ Engineered to support scientific, Earth-observation-grounded risk analytics adhe
 
 ```text
 geospatial-risk-mcp-server/
-├── server.py              # FastMCP server entrypoint & tool declarations
-├── web_app.py             # Interactive Leaflet Web Decision Support Dashboard
-├── models.py              # Pydantic data schemas & geographic validation
-├── services/
-│   └── risk_engine.py     # Deterministic mathematical & geospatial calculation engine
-├── tests/
-│   └── test_server.py     # Pytest suite verifying deterministic models & schemas
-├── assets/
-│   └── dashboard_preview.png  # Live simulation screenshot
-├── .github/
-│   └── workflows/ci.yml   # GitHub Actions CI & Docker test automation
-├── Dockerfile             # Multi-stage container with automated test verification
-├── requirements.txt       # Dependency specifications
-└── README.md
+|-- server.py              # FastMCP server entrypoint & tool declarations
+|-- web_app.py             # Interactive Leaflet Web Decision Support Dashboard
+|-- models.py              # Pydantic data schemas & geographic validation
+|-- services/
+|   +-- risk_engine.py     # Deterministic mathematical & geospatial calculation engine
+|-- tests/
+|   +-- test_server.py     # Pytest suite verifying deterministic models & schemas
+|-- assets/
+|   +-- dashboard_preview.png  # Live simulation screenshot
+|-- .github/
+|   +-- workflows/ci.yml   # GitHub Actions CI & Docker test automation
+|-- Dockerfile             # Multi-stage container with automated test verification
+|-- requirements.txt       # Dependency specifications
++-- README.md
 ```
 
 ---
