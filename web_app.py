@@ -155,9 +155,12 @@ HTML_DASHBOARD = """<!DOCTYPE html>
 
       <!-- Simulation Sliders (Dynamic for Flood vs Drought) -->
       <div class="panel p-3.5 rounded-xl flex flex-col gap-3">
-        <div class="border-b border-slate-800 pb-2 flex items-center justify-between">
-          <h2 class="font-bold text-xs text-slate-200 uppercase tracking-wider" id="slider-panel-title">Hydrologic Parameters</h2>
-          <span class="text-[10px] text-emerald-400 font-mono" id="current-coords">Lat: 5.92 | Lon: 0.99</span>
+        <div class="border-b border-slate-800 pb-2 flex items-center justify-between gap-2">
+          <h2 class="font-bold text-xs text-slate-200 uppercase tracking-wider shrink-0" id="slider-panel-title">Hydrologic Parameters</h2>
+          <div class="flex items-center gap-1.5 text-right overflow-hidden">
+            <span class="text-xs font-bold text-white truncate max-w-[170px]" id="current-place-name">📍 Keta, Ghana</span>
+            <span class="text-[10px] text-emerald-400 font-mono shrink-0" id="current-coords">(05.92°N, 00.99°E)</span>
+          </div>
         </div>
 
         <!-- FLOOD INPUTS -->
@@ -472,17 +475,47 @@ HTML_DASHBOARD = """<!DOCTYPE html>
     let geojsonLayer = null;
     let targetMarker = L.marker([currentLat, currentLon], { icon: precisionReticle }).addTo(map).bindPopup("Current Risk Target");
 
-    // Auto-detect real terrain elevation, rainfall, and soil porosity from live telemetry
+    function formatCoords(lat, lon) {
+      const latDir = lat >= 0 ? '°N' : '°S';
+      const lonDir = lon >= 0 ? '°E' : '°W';
+      return `${Math.abs(lat).toFixed(2)}${latDir}, ${Math.abs(lon).toFixed(2)}${lonDir}`;
+    }
+
+    // Auto-detect real terrain elevation, rainfall, soil porosity, and human place name
     async function fetchTerrainElevation(lat, lon) {
       const elevBadge = document.getElementById('elev-badge');
       const statusEl = document.getElementById('search-status');
       if (elevBadge) elevBadge.innerText = "Syncing EO...";
-      if (statusEl) statusEl.innerText = "Querying Environmental Telemetry...";
+      if (statusEl) statusEl.innerText = "Resolving Place & Environmental Telemetry...";
       try {
         const res = await fetch(`/api/terrain-elevation?lat=${lat}&lon=${lon}`);
         if (res.ok) {
           const d = await res.json();
           
+          // 0. Human Place Name Resolution (Beside Coordinates)
+          if (d.place_name) {
+            currentLocationName = d.full_location || d.place_name;
+            const placeEl = document.getElementById('current-place-name');
+            if (placeEl) placeEl.innerText = `📍 ${d.place_name}`;
+            const coordsEl = document.getElementById('current-coords');
+            if (coordsEl) coordsEl.innerText = `(${formatCoords(lat, lon)})`;
+            
+            targetMarker.setLatLng([lat, lon]).bindPopup(`
+              <div class="font-sans p-1 min-w-[190px]">
+                <div class="font-bold text-white text-xs border-b border-slate-700 pb-1 mb-1 flex items-center justify-between gap-2">
+                  <span class="truncate">📍 ${d.place_name}</span>
+                  <span class="text-[9px] font-mono text-emerald-400 shrink-0">${formatCoords(lat, lon)}</span>
+                </div>
+                <div class="text-[11px] text-slate-300 leading-tight">${d.full_location || ''}</div>
+                <div class="text-[9px] text-slate-400 font-mono mt-1.5 pt-1 border-t border-slate-800 flex justify-between">
+                  <span>Elev: ${d.elevation}m</span>
+                  <span>Rain: ${d.precipitation_mm}mm</span>
+                  <span>Soil: ${d.soil_rate.toFixed(2)}</span>
+                </div>
+              </div>
+            `).openPopup();
+          }
+
           // 1. Surface Elevation (NASADEM / SRTM v3)
           if (typeof d.elevation === 'number') {
             const rawElev = d.elevation;
@@ -525,7 +558,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           }
 
           if (statusEl) {
-            statusEl.innerText = `EO Telemetry Synced: ${d.elevation}m · ${d.precipitation_mm}mm · Soil ${d.soil_rate.toFixed(2)}`;
+            statusEl.innerText = `${d.place_name || 'Location'} · ${d.elevation}m · ${d.precipitation_mm}mm · Soil ${d.soil_rate.toFixed(2)}`;
           }
         }
       } catch (err) {
@@ -543,11 +576,21 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       const norm = normalizeCoords(e.latlng.lat, e.latlng.lng);
       currentLat = norm.lat;
       currentLon = norm.lon;
-      currentLocationName = `${currentLat.toFixed(2)}N, ${currentLon.toFixed(2)}E`;
+      const coordStr = formatCoords(currentLat, currentLon);
 
-      targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`<b>Target Coordinates</b><br><span class="text-[11px] text-slate-400">${currentLat.toFixed(3)}°N, ${currentLon.toFixed(3)}°E</span>`).openPopup();
-      document.getElementById('current-coords').innerText = `Lat: ${currentLat.toFixed(2)} | Lon: ${currentLon.toFixed(2)}`;
-      document.getElementById('search-status').innerText = "Querying Environmental Telemetry...";
+      const placeEl = document.getElementById('current-place-name');
+      if (placeEl) placeEl.innerText = "📍 Identifying Location...";
+      const coordsEl = document.getElementById('current-coords');
+      if (coordsEl) coordsEl.innerText = `(${coordStr})`;
+      document.getElementById('search-status').innerText = `Resolving place for ${coordStr}...`;
+
+      targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`
+        <div class="font-sans p-1">
+          <div class="font-bold text-white text-xs">📍 Identifying Place...</div>
+          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${coordStr}</div>
+        </div>
+      `).openPopup();
+
       await fetchTerrainElevation(currentLat, currentLon);
     });
 
@@ -559,7 +602,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       statusEl.innerText = "Locating...";
 
       try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=en`);
         const results = await response.json();
         if (results && results.length > 0) {
           const top = results[0];
@@ -567,13 +610,27 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           currentLat = norm.lat;
           currentLon = norm.lon;
           const parts = top.display_name.split(',').map(s => s.trim());
-          currentLocationName = parts[0];
+          const shortName = parts[0] + (parts.length > 1 ? ', ' + parts[parts.length - 1] : '');
+          currentLocationName = top.display_name;
           const subLocation = parts.slice(1, 3).join(', ');
 
+          const placeEl = document.getElementById('current-place-name');
+          if (placeEl) placeEl.innerText = `📍 ${shortName}`;
+          const coordsEl = document.getElementById('current-coords');
+          if (coordsEl) coordsEl.innerText = `(${formatCoords(currentLat, currentLon)})`;
+
           map.flyTo([currentLat, currentLon], 10);
-          targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`<b>${currentLocationName}</b>${subLocation ? `<br><span class="text-[11px] text-slate-400">${subLocation}</span>` : ''}`).openPopup();
-          document.getElementById('current-coords').innerText = `Lat: ${currentLat.toFixed(2)} | Lon: ${currentLon.toFixed(2)}`;
-          statusEl.innerText = `Located: ${currentLocationName}`;
+          targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`
+            <div class="font-sans p-1 min-w-[190px]">
+              <div class="font-bold text-white text-xs border-b border-slate-700 pb-1 mb-1 flex items-center justify-between gap-2">
+                <span class="truncate">📍 ${shortName}</span>
+                <span class="text-[9px] font-mono text-emerald-400 shrink-0">${formatCoords(currentLat, currentLon)}</span>
+              </div>
+              <div class="text-[11px] text-slate-300 leading-tight">${subLocation}</div>
+            </div>
+          `).openPopup();
+          
+          statusEl.innerText = `Located: ${shortName}`;
           await fetchTerrainElevation(currentLat, currentLon);
         } else {
           statusEl.innerText = "Location not found.";
@@ -615,12 +672,30 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       document.getElementById('val-ndvi').innerText = h.ndvi.toFixed(2);
       
       const parts = h.name.split(',').map(s => s.trim());
-      const hubName = parts[0];
+      const hubShort = parts[0] + (parts.length > 1 ? ', ' + parts[parts.length - 1] : '');
       const hubRegion = parts.slice(1).join(', ');
+      
+      const placeEl = document.getElementById('current-place-name');
+      if (placeEl) placeEl.innerText = `📍 ${hubShort}`;
+      const coordsEl = document.getElementById('current-coords');
+      if (coordsEl) coordsEl.innerText = `(${formatCoords(currentLat, currentLon)})`;
+
       map.flyTo([currentLat, currentLon], 10);
-      targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`<b>${hubName}</b>${hubRegion ? `<br><span class="text-[11px] text-slate-400">${hubRegion}</span>` : ''}`).openPopup();
-      document.getElementById('current-coords').innerText = `Lat: ${currentLat.toFixed(2)} | Lon: ${currentLon.toFixed(2)}`;
-      document.getElementById('search-status').innerText = `Hub Synced: ${hubName}`;
+      targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`
+        <div class="font-sans p-1 min-w-[190px]">
+          <div class="font-bold text-white text-xs border-b border-slate-700 pb-1 mb-1 flex items-center justify-between gap-2">
+            <span class="truncate">📍 ${hubShort}</span>
+            <span class="text-[9px] font-mono text-emerald-400 shrink-0">${formatCoords(currentLat, currentLon)}</span>
+          </div>
+          <div class="text-[11px] text-slate-300 leading-tight">${hubRegion}</div>
+          <div class="text-[9px] text-slate-400 font-mono mt-1.5 pt-1 border-t border-slate-800 flex justify-between">
+            <span>Elev: ${h.elev}m</span>
+            <span>Rain: ${h.rain}mm</span>
+            <span>Soil: ${h.soil.toFixed(2)}</span>
+          </div>
+        </div>
+      `).openPopup();
+      document.getElementById('search-status').innerText = `Hub Synced: ${hubShort}`;
       updateValuesAndTrigger();
     }
 
@@ -1107,20 +1182,58 @@ async def api_terrain_elevation(request: Request):
         # Baseline NDVI based on bioclimatic zone
         ndvi = 0.55 if abs_lat < 15 and elev < 500 else (0.22 if 18 < abs_lat < 32 else 0.42)
         
+        # Reverse-geocode for English human place name
+        place_name = None
+        full_location = None
+        try:
+            geo_url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}&zoom=10&accept-language=en"
+            geo_req = urllib.request.Request(geo_url, headers={"User-Agent": "GeoRiskPlatform/2.4", "Accept-Language": "en"})
+            with urllib.request.urlopen(geo_req, timeout=3) as geo_resp:
+                geo_data = json.loads(geo_resp.read().decode("utf-8"))
+                addr = geo_data.get("address", {})
+                city = addr.get("city") or addr.get("town") or addr.get("municipality") or addr.get("district") or addr.get("county") or addr.get("suburb") or addr.get("village")
+                region = addr.get("state") or addr.get("region") or addr.get("province")
+                country = addr.get("country")
+                
+                clean_city = city.replace(" Municipal District", "").replace(" Metropolitan District", "").replace(" District", "") if city else ""
+                parts = [p for p in [clean_city, country] if p]
+                place_name = ", ".join(parts) if parts else (geo_data.get("display_name", "").split(",")[0] or None)
+                full_location = ", ".join([p for p in [clean_city, region, country] if p]) or geo_data.get("display_name", None)
+        except Exception:
+            pass
+
+        if not place_name:
+            lat_dir = "N" if lat >= 0 else "S"
+            lon_dir = "E" if lon >= 0 else "W"
+            if elev <= 0.5:
+                place_name = "Offshore Marine Zone"
+                full_location = f"Offshore Marine Waters ({abs(lat):.2f}°{lat_dir}, {abs(lon):.2f}°{lon_dir})"
+            else:
+                place_name = f"Regional Sector ({abs(lat):.2f}°{lat_dir}, {abs(lon):.2f}°{lon_dir})"
+                full_location = f"Inland Coordinate Sector ({abs(lat):.2f}°{lat_dir}, {abs(lon):.2f}°{lon_dir})"
+
         return JSONResponse({
+            "place_name": place_name,
+            "full_location": full_location,
             "elevation": elev,
             "precipitation_mm": rainfall,
             "soil_rate": soil_rate,
             "soil_moisture_pct": soil_moist,
             "surface_temp_c": temp,
             "ndvi": round(ndvi, 2),
-            "source": "NASA GPM / SRTM / USDA-NRCS Synced"
+            "source": "NASA GPM / SRTM / USDA-NRCS / OSM Synced"
         })
     except Exception as exc:
         lat = float(request.query_params.get("lat", 0.0))
+        lon = float(request.query_params.get("lon", 0.0))
         abs_lat = abs(lat)
         elev = 3.0 if abs_lat < 10 else 25.0
+        lat_dir = "N" if lat >= 0 else "S"
+        lon_dir = "E" if lon >= 0 else "W"
+        place_name = f"Target Area ({abs(lat):.2f}°{lat_dir}, {abs(lon):.2f}°{lon_dir})"
         return JSONResponse({
+            "place_name": place_name,
+            "full_location": place_name,
             "elevation": elev,
             "precipitation_mm": 115.0 if abs_lat < 15 else 60.0,
             "soil_rate": 0.25 if elev < 10 else 0.45,
