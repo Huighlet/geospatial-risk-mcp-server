@@ -170,6 +170,12 @@ HTML_DASHBOARD = """<!DOCTYPE html>
         <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 leading-relaxed" id="risk-action">
           Activate municipal drainage systems and issue public hazard alerts.
         </div>
+
+        <!-- Export GeoJSON Layer Button -->
+        <button onclick="downloadGeoJSON()" class="w-full py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 transition flex items-center justify-center gap-2 shadow-md">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          <span>Export RFC 7946 GeoJSON Layer</span>
+        </button>
       </div>
       
     </div>
@@ -449,9 +455,24 @@ HTML_DASHBOARD = """<!DOCTYPE html>
             `);
           }
         }).addTo(map);
+        latestGeoJSON = geojson;
       } catch (err) {
         console.error("drawHazardZones error:", err);
       }
+    }
+
+    function downloadGeoJSON() {
+      if (!latestGeoJSON) {
+        alert("Please run a simulation first to generate the hazard layer.");
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(latestGeoJSON, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `servir_hazard_layer_${currentLat.toFixed(2)}_${currentLon.toFixed(2)}.geojson`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
     }
 
     // Initial calculation on page load

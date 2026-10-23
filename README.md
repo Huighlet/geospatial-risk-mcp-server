@@ -1,68 +1,95 @@
 # Geospatial Climate Risk MCP Server
 
-A production-grade Python **Model Context Protocol (MCP)** server providing deterministic geospatial analytics, flood vulnerability indexing, and GeoJSON bounding-box hazard partitions for LLM agents and decision-support systems.
+[![CI & Docker Verification](https://github.com/Huighlet/geospatial-risk-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/Huighlet/geospatial-risk-mcp-server/actions/workflows/ci.yml)
+[![FastMCP](https://img.shields.io/badge/Protocol-Model%20Context%20Protocol-emerald.svg)](https://modelcontextprotocol.io)
+[![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+
+A production-grade Python **Model Context Protocol (MCP)** server and interactive decision-support platform providing deterministic geospatial analytics, flood vulnerability indexing, and RFC 7946 GeoJSON bounding-box hazard partitions for LLM agents, GIS analysts, and disaster response teams.
 
 Engineered to support scientific, Earth-observation-grounded risk analytics adhering to the **Sendai Framework for Disaster Risk Reduction** and **SERVIR Global Risk Platform (GRP)** design standards.
 
 ---
 
-##  Key Features
+## 📸 Interactive Web Map Decision Platform
 
-- **Strict Deterministic Analytics:** Decouples quantitative calculations from language models. The LLM explains and summarizes, but never hallucinates mathematical risk indices.
-- **RFC 7946 GeoJSON Standard:** Outputs valid `FeatureCollection` geometries with analytical polygon coordinates, hazard classifications, and centroid telemetry.
-- **Model Context Protocol (MCP) Native:** Built using FastMCP with standard input schemas, tool descriptions, and resource capabilities.
-- **Containerized & CI/CD Ready:** Fully dockerized with automated test execution during image build.
+![SERVIR Climate Risk Platform Interactive Dashboard](assets/dashboard_preview.png)
+*Live interactive hazard simulation over Keta Lagoon (Volta Region, Ghana) showing real-time 81.3 Critical Flood Inundation and dynamic RFC 7946 GeoJSON polygon styling.*
 
 ---
 
-##  MCP Tool Definitions
+## 🌟 Key Architecture & Capabilities
 
-### 1. `calculate_flood_vulnerability`
-Calculates a composite flood vulnerability index (0 to 100) based on elevation, precipitation, and soil percolation.
-* **Input Parameters:**
-  * `latitude` (*float*): Target latitude (-90 to 90).
-  * `longitude` (*float*): Target longitude (-180 to 180).
-  * `elevation_meters` (*float*): Surface altitude above sea level.
-  * `precipitation_mm` (*float*): 24-hour rainfall forecast.
-  * `soil_absorption_rate` (*float*, optional): Soil infiltration coefficient (0.0 to 1.0).
-* **Output:** Deterministic risk score, severity level (`LOW`, `MODERATE`, `HIGH`, `CRITICAL`), and operational guidance.
+### 1. Strict Deterministic Scientific Engine
+- **Decoupled Analytics:** Quantitative hydrologic and topographic calculations run inside approved deterministic services. The LLM explains and guides, but never hallucinates mathematical risk indices.
+- **Physical Grounding:** Correlates surface elevation (meters above sea level), precipitation intensity (mm), and soil percolation coefficients.
 
-### 2. `evaluate_drought_index`
-Computes agricultural drought severity by correlating soil moisture deficit, land surface temperature anomalies, and NDVI vegetation health.
-* **Input Parameters:**
-  * `soil_moisture_pct` (*float*): Topsoil moisture percentage (0 to 100).
-  * `surface_temp_celsius` (*float*): Land surface temperature (-50 to 60°C).
-  * `baseline_ndvi` (*float*): Normalized Difference Vegetation Index (-1.0 to 1.0).
-* **Output:** Composite drought classification (`NORMAL`, `MODERATE_DROUGHT`, `SEVERE_DROUGHT`, `EXTREME_DROUGHT`).
+### 2. RFC 7946 GeoJSON Standard & Spatial Partitioning
+- **Dynamic Bounding-Box Partitions:** Divides any target geographic area into analytical grid polygons with cell-specific elevation variance, computed risk scores, and centroid telemetry.
+- **One-Click GIS Export:** Export generated hazard layers directly to `.geojson` for seamless ingestion into **QGIS**, **ArcGIS**, or **Google Earth Engine**.
 
-### 3. `query_bounding_box_risk`
-Partitions a target geographic bounding box into spatial cells and generates a compliant GeoJSON `FeatureCollection` with risk scores for web map visualization (Leaflet, MapLibre, OpenLayers).
-* **Input Parameters:** `min_lat`, `min_lon`, `max_lat`, `max_lon`, `hazard_type`.
-* **Output:** GeoJSON FeatureCollection with polygon coordinates and zone metadata.
+### 3. Model Context Protocol (MCP) Native
+- **FastMCP Protocol Integration:** Exposes standardized tool definitions, input schemas, and resource capabilities for Claude Desktop, Cursor, Antigravity, and autonomous agent loops.
+
+### 4. Containerized & CI/CD Automated
+- **GitHub Actions Pipeline:** Automated test suite execution and Docker container build verification on every commit.
 
 ---
 
-##  Project Architecture
+## 🛠️ Registered MCP Tools
+
+| Tool Name | Input Parameters | Output |
+| :--- | :--- | :--- |
+| **`calculate_flood_vulnerability`** | `latitude`, `longitude`, `elevation_meters`, `precipitation_mm`, `soil_absorption_rate` | Deterministic index (0–100), severity (`LOW` to `CRITICAL`), operational guidance |
+| **`evaluate_drought_index`** | `soil_moisture_pct`, `surface_temp_celsius`, `baseline_ndvi` | Composite drought score, classification (`EXTREME_DROUGHT` to `NORMAL`) |
+| **`query_bounding_box_risk`** | `min_lat`, `min_lon`, `max_lat`, `max_lon`, `hazard_type` | RFC 7946 GeoJSON FeatureCollection with analytical polygon coordinates |
+
+---
+
+## 📂 Project Structure
 
 ```text
 geospatial-risk-mcp-server/
 ├── server.py              # FastMCP server entrypoint & tool declarations
+├── web_app.py             # Interactive Leaflet Web Decision Support Dashboard
 ├── models.py              # Pydantic data schemas & geographic validation
 ├── services/
-│   └── risk_engine.py     # Deterministic mathematical & geospatial engine
+│   └── risk_engine.py     # Deterministic mathematical & geospatial calculation engine
 ├── tests/
-│   └── test_server.py     # Unit tests verifying deterministic behavior & schemas
-├── Dockerfile             # Multi-stage production container
+│   └── test_server.py     # Pytest suite verifying deterministic models & schemas
+├── assets/
+│   └── dashboard_preview.png  # Live simulation screenshot
+├── .github/
+│   └── workflows/ci.yml   # GitHub Actions CI & Docker test automation
+├── Dockerfile             # Multi-stage container with automated test verification
 ├── requirements.txt       # Dependency specifications
 └── README.md
 ```
 
 ---
 
-##  Client Integration
+## 🚀 Quickstart
 
-### 1. Claude Desktop / Cursor MCP Configuration
-Add this server to your `claude_desktop_config.json` or cursor MCP settings:
+### 1. Launch the Interactive Web Dashboard
+```bash
+# Clone the repository
+git clone https://github.com/Huighlet/geospatial-risk-mcp-server.git
+cd geospatial-risk-mcp-server
+
+# Create virtual environment and install dependencies
+python -m venv .venv
+source .venv/bin/activate  # Or on Windows: .\.venv\Scripts\activate
+pip install -r requirements.txt
+
+# Run the live map dashboard
+python web_app.py
+```
+👉 Open **`http://localhost:8000`** in your browser.
+
+---
+
+### 2. Connect to an MCP Client (Claude Desktop / Cursor)
+Add to your `claude_desktop_config.json`:
 
 ```json
 {
@@ -75,26 +102,14 @@ Add this server to your `claude_desktop_config.json` or cursor MCP settings:
 }
 ```
 
-### 2. Docker Execution
-```bash
-# Build the container
-docker build -t geospatial-risk-mcp .
-
-# Run via standard I/O
-docker run -i --rm geospatial-risk-mcp
-```
-
 ---
 
-##  Automated Testing
-
-Run the test suite to verify schema validation and deterministic calculations:
-
+### 3. Run Automated Tests
 ```bash
 pytest tests/ -v
 ```
 
 ---
 
-##  License
+## 📄 License
 MIT License
