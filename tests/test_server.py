@@ -33,7 +33,7 @@ def test_drought_index_severity_scaling():
     )
     result = RiskEngine.calculate_drought_index(severe_drought)
     assert result["composite_drought_index"] >= 60.0
-    assert result["classification"] in ["SEVERE_DROUGHT", "EXTREME_DROUGHT"]
+    assert result["classification"] in ["HIGH", "CRITICAL"]
 
 
 def test_geojson_bounding_box_generation():
@@ -48,7 +48,7 @@ def test_geojson_bounding_box_generation():
     dumped = geojson_result.model_dump()
 
     assert dumped["type"] == "FeatureCollection"
-    assert len(dumped["features"]) == 4
+    assert len(dumped["features"]) == 16
     for feature in dumped["features"]:
         assert feature["type"] == "Feature"
         assert feature["geometry"]["type"] == "Polygon"

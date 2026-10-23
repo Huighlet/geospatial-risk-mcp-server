@@ -33,7 +33,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    #map { height: 520px; width: 100%; border-radius: 1rem; }
+    #map { height: 480px; width: 100%; border-radius: 1rem; }
     .glass { background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.12); }
     .scrollbar-thin::-webkit-scrollbar { width: 5px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
@@ -42,14 +42,14 @@ HTML_DASHBOARD = """<!DOCTYPE html>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
 
   <!-- Header -->
-  <header class="h-20 border-b border-slate-800 px-6 flex items-center justify-between glass sticky top-0 z-50">
+  <header class="h-16 border-b border-slate-800 px-5 flex items-center justify-between glass sticky top-0 z-50">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-emerald-500/20">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-emerald-500/20">
         S
       </div>
       <div>
         <h1 class="font-bold text-base md:text-lg text-white tracking-wide">SERVIR Global Risk Platform</h1>
-        <p class="text-xs text-slate-400">Earth Observation Decision Support & FastMCP Multi-Hazard Engine</p>
+        <p class="text-[11px] text-slate-400">Earth Observation Decision Support & FastMCP Multi-Hazard Engine</p>
       </div>
     </div>
     
@@ -71,13 +71,13 @@ HTML_DASHBOARD = """<!DOCTYPE html>
   </header>
 
   <!-- Main Grid -->
-  <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 p-5">
+  <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4">
     
     <!-- Left Sidebar: Controls, Scenarios & AI -->
-    <div class="lg:col-span-5 flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-100px)] pr-1 scrollbar-thin">
+    <div class="lg:col-span-5 flex flex-col gap-3.5 overflow-y-auto max-h-[calc(100vh-80px)] pr-1 scrollbar-thin">
       
       <!-- Location Search & Fast Hub Pills -->
-      <div class="glass p-4 rounded-2xl flex flex-col gap-3">
+      <div class="glass p-3.5 rounded-2xl flex flex-col gap-2.5">
         <div class="flex items-center justify-between">
           <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Target Location Search</label>
           <span id="search-status" class="text-[11px] text-emerald-400 font-mono">Global Geocoder Active</span>
@@ -110,7 +110,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       </div>
 
       <!-- Climate Change Scenario Selectors (SERVIR Requirement) -->
-      <div class="glass p-4 rounded-2xl flex flex-col gap-2.5">
+      <div class="glass p-3.5 rounded-2xl flex flex-col gap-2">
         <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Climate Change Scenario Comparison</label>
         <div class="grid grid-cols-3 gap-2">
           <button onclick="applyScenario('baseline')" class="px-2 py-2 rounded-xl text-center bg-slate-900 hover:bg-slate-800 border border-slate-700 transition flex flex-col items-center">
@@ -132,7 +132,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       </div>
 
       <!-- Simulation Sliders (Dynamic for Flood vs Drought) -->
-      <div class="glass p-4 rounded-2xl flex flex-col gap-3.5">
+      <div class="glass p-3.5 rounded-2xl flex flex-col gap-3">
         <div class="border-b border-slate-800 pb-2 flex items-center justify-between">
           <h2 class="font-bold text-xs text-slate-200 uppercase tracking-wider" id="slider-panel-title">Hydrologic Parameters</h2>
           <span class="text-[10px] text-emerald-400 font-mono" id="current-coords">Lat: 5.92 | Lon: 0.99</span>
@@ -195,9 +195,9 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       </div>
 
       <!-- Live Computed Risk Metrics & AI Explain Button -->
-      <div id="result-card" class="glass p-4 rounded-2xl flex flex-col gap-3.5">
+      <div id="result-card" class="glass p-3.5 rounded-2xl flex flex-col gap-3">
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider" id="metric-title">Computed Vulnerability Index</span>
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider" id="metric-title">Computed Flood Vulnerability</span>
           <div id="risk-badge" class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/40">
             HIGH
           </div>
@@ -205,7 +205,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
         
         <div class="flex items-baseline gap-2">
           <div class="text-4xl font-black text-white" id="risk-score">69.8</div>
-          <div class="text-xs text-slate-400" id="scale-label">/ 100 (Flood Vulnerability Index)</div>
+          <div class="text-xs text-slate-400 font-semibold" id="scale-label">/ 100</div>
         </div>
 
         <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 leading-relaxed" id="risk-action">
@@ -229,7 +229,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
     </div>
 
     <!-- Right Area: Map & Live Risk Response Curve -->
-    <div class="lg:col-span-7 flex flex-col gap-4">
+    <div class="lg:col-span-7 flex flex-col gap-3.5">
       
       <!-- Interactive Map Card -->
       <div class="glass p-2 rounded-2xl relative shadow-2xl overflow-hidden">
@@ -237,9 +237,8 @@ HTML_DASHBOARD = """<!DOCTYPE html>
         
         <!-- Map Legend -->
         <div class="absolute bottom-5 right-5 z-[1000] glass px-3.5 py-2.5 rounded-xl shadow-2xl flex flex-col gap-1.5 text-xs border border-slate-700/60">
-          <div class="font-bold text-slate-300 text-[10px] uppercase tracking-wider border-b border-slate-700/60 pb-1 flex justify-between gap-3">
-            <span>16-Cell Grid Hazard</span>
-            <span class="text-slate-400 text-[9px]">4x4 GeoJSON</span>
+          <div class="font-bold text-slate-300 text-[10px] uppercase tracking-wider border-b border-slate-700/60 pb-1">
+            Hazard Severity Scale
           </div>
           <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-red-500 shadow-sm shadow-red-500/50"></span> <span class="text-[11px]">Critical (&ge;75)</span></div>
           <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-orange-500 shadow-sm shadow-orange-500/50"></span> <span class="text-[11px]">High (50-74)</span></div>
@@ -249,10 +248,10 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       </div>
 
       <!-- Live Vulnerability Response Chart (Chart.js) -->
-      <div class="glass p-4 rounded-2xl">
+      <div class="glass p-3.5 rounded-2xl">
         <div class="flex items-center justify-between mb-2">
-          <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Topographic Sensitivity Response Curve</h3>
-          <span class="text-[11px] text-slate-400">Vulnerability vs. Rainfall (0 - 250mm)</span>
+          <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider" id="chart-title">Topographic Sensitivity Response Curve</h3>
+          <span class="text-[11px] text-slate-400" id="chart-subtitle">Vulnerability vs. Rainfall (0 - 250mm)</span>
         </div>
         <div class="h-32">
           <canvas id="riskChart"></canvas>
@@ -359,7 +358,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       currentLon = norm.lon;
       currentLocationName = `${currentLat.toFixed(2)}N, ${currentLon.toFixed(2)}E`;
 
-      targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`Target: ${currentLocationName}`).openPopup();
+      targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`<b>Target Coordinates</b><br><span class="text-[11px] text-slate-400">${currentLat.toFixed(3)}°N, ${currentLon.toFixed(3)}°E</span>`).openPopup();
       document.getElementById('current-coords').innerText = `Lat: ${currentLat.toFixed(2)} | Lon: ${currentLon.toFixed(2)}`;
       document.getElementById('search-status').innerText = "Target Selected";
       runSimulation();
@@ -380,10 +379,12 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           const norm = normalizeCoords(parseFloat(top.lat), parseFloat(top.lon));
           currentLat = norm.lat;
           currentLon = norm.lon;
-          currentLocationName = top.display_name.split(',')[0];
+          const parts = top.display_name.split(',').map(s => s.trim());
+          currentLocationName = parts[0];
+          const subLocation = parts.slice(1, 3).join(', ');
 
           map.flyTo([currentLat, currentLon], 10);
-          targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`<b>${currentLocationName}</b><br><span class="text-[11px] text-slate-500">${top.display_name}</span>`).openPopup();
+          targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`<b>${currentLocationName}</b>${subLocation ? `<br><span class="text-[11px] text-slate-400">${subLocation}</span>` : ''}`).openPopup();
           document.getElementById('current-coords').innerText = `Lat: ${currentLat.toFixed(2)} | Lon: ${currentLon.toFixed(2)}`;
           statusEl.innerText = `Located: ${currentLocationName}`;
           runSimulation();
@@ -412,10 +413,13 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       currentLocationName = h.name;
       document.getElementById('input-elev').value = h.elev;
       document.getElementById('input-rain').value = h.rain;
+      const parts = h.name.split(',').map(s => s.trim());
+      const hubName = parts[0];
+      const hubRegion = parts.slice(1).join(', ');
       map.flyTo([currentLat, currentLon], 10);
-      targetMarker.setLatLng([currentLat, currentLon]).bindPopup(h.name).openPopup();
+      targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`<b>${hubName}</b>${hubRegion ? `<br><span class="text-[11px] text-slate-400">${hubRegion}</span>` : ''}`).openPopup();
       document.getElementById('current-coords').innerText = `Lat: ${currentLat.toFixed(2)} | Lon: ${currentLon.toFixed(2)}`;
-      document.getElementById('search-status').innerText = h.name.split(',')[0];
+      document.getElementById('search-status').innerText = hubName;
       updateValuesAndTrigger();
     }
 
@@ -427,7 +431,10 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       const floodControls = document.getElementById('flood-controls');
       const droughtControls = document.getElementById('drought-controls');
       const panelTitle = document.getElementById('slider-panel-title');
+      const metricTitle = document.getElementById('metric-title');
       const scaleLabel = document.getElementById('scale-label');
+      const chartTitle = document.getElementById('chart-title');
+      const chartSubtitle = document.getElementById('chart-subtitle');
 
       if (mode === 'drought') {
         droughtBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-amber-500 text-white shadow-md";
@@ -435,14 +442,20 @@ HTML_DASHBOARD = """<!DOCTYPE html>
         floodControls.classList.add('hidden');
         droughtControls.classList.remove('hidden');
         panelTitle.innerText = "Agro-Meteorological Parameters";
-        scaleLabel.innerText = "/ 100 (Drought Stress Index)";
+        metricTitle.innerText = "Computed Drought Index";
+        scaleLabel.innerText = "/ 100";
+        if (chartTitle) chartTitle.innerText = "Agro-Climatic Sensitivity Response Curve";
+        if (chartSubtitle) chartSubtitle.innerText = "Drought Index vs. Topsoil Moisture (0 - 100%)";
       } else {
         floodBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-white shadow-md";
         droughtBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white";
         droughtControls.classList.add('hidden');
         floodControls.classList.remove('hidden');
         panelTitle.innerText = "Hydrologic Parameters";
-        scaleLabel.innerText = "/ 100 (Flood Vulnerability Index)";
+        metricTitle.innerText = "Computed Flood Vulnerability";
+        scaleLabel.innerText = "/ 100";
+        if (chartTitle) chartTitle.innerText = "Topographic Sensitivity Response Curve";
+        if (chartSubtitle) chartSubtitle.innerText = "Vulnerability vs. Rainfall (0 - 250mm)";
       }
       runSimulation();
     }
@@ -538,8 +551,8 @@ HTML_DASHBOARD = """<!DOCTYPE html>
         // Draw 16-cell GeoJSON Grid
         await drawHazardZones(rain, elev, soil, moist, temp, ndvi);
 
-        // Update Sensitivity Chart
-        updateChart(elev, soil);
+        // Update Sensitivity Chart dynamically
+        updateChart(elev, soil, moist, temp, ndvi);
       } catch (err) {
         console.error("Simulation error:", err);
       }
@@ -627,30 +640,58 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       }
     }
 
-    // Chart.js Sensitivity Curve
-    function updateChart(elev, soil) {
-      const rainSteps = [0, 30, 60, 90, 120, 150, 180, 210, 240];
-      const riskScores = rainSteps.map(r => {
-        const elevFactor = elev <= 0 ? 1.0 : (elev < 50 ? Math.max(0.1, 1.0 - (elev/50.0)) : 0.2);
-        const precipFactor = Math.min(1.0, r / 250.0);
-        const runoffFactor = 1.0 - (soil || 0.35);
-        return ((elevFactor * 0.45 + precipFactor * 0.40 + runoffFactor * 0.15) * 100).toFixed(1);
-      });
+    // Chart.js Sensitivity Curve (Dynamically switches for Flood vs Drought)
+    function updateChart(elev, soil, moist, temp, ndvi) {
+      let labels = [];
+      let riskScores = [];
+      let strokeColor = '#10b981';
+      let fillColor = 'rgba(16, 185, 129, 0.15)';
+      let datasetLabel = 'Vulnerability Index';
+
+      if (activeHazard === 'drought') {
+        const moistSteps = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+        labels = moistSteps.map(m => m + '%');
+        riskScores = moistSteps.map(m => {
+          const mFactor = Math.max(0.0, 1.0 - (m / 60.0));
+          const tFactor = Math.max(0.0, Math.min(1.0, ((temp || 38.0) - 20.0) / 25.0));
+          const vFactor = Math.max(0.0, 1.0 - Math.max(0.0, ndvi !== undefined ? ndvi : 0.24));
+          return ((mFactor * 0.45 + tFactor * 0.35 + vFactor * 0.20) * 100).toFixed(1);
+        });
+        strokeColor = '#f59e0b';
+        fillColor = 'rgba(245, 158, 11, 0.15)';
+        datasetLabel = 'Drought Stress Index';
+      } else {
+        const rainSteps = [0, 30, 60, 90, 120, 150, 180, 210, 240];
+        labels = rainSteps.map(r => r + 'mm');
+        riskScores = rainSteps.map(r => {
+          const elevFactor = elev <= 0 ? 1.0 : (elev < 50 ? Math.max(0.1, 1.0 - (elev/50.0)) : 0.2);
+          const precipFactor = Math.min(1.0, r / 250.0);
+          const runoffFactor = 1.0 - (soil || 0.35);
+          return ((elevFactor * 0.45 + precipFactor * 0.40 + runoffFactor * 0.15) * 100).toFixed(1);
+        });
+        strokeColor = '#10b981';
+        fillColor = 'rgba(16, 185, 129, 0.15)';
+        datasetLabel = 'Flood Vulnerability Index';
+      }
 
       const ctx = document.getElementById('riskChart').getContext('2d');
       if (riskChart) {
+        riskChart.data.labels = labels;
+        riskChart.data.datasets[0].label = datasetLabel;
         riskChart.data.datasets[0].data = riskScores;
+        riskChart.data.datasets[0].borderColor = strokeColor;
+        riskChart.data.datasets[0].backgroundColor = fillColor;
         riskChart.update();
       } else {
         riskChart = new Chart(ctx, {
           type: 'line',
           data: {
-            labels: rainSteps.map(r => r + 'mm'),
+            labels: labels,
             datasets: [{
-              label: 'Vulnerability Index',
+              label: datasetLabel,
               data: riskScores,
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.15)',
+              borderColor: strokeColor,
+              backgroundColor: fillColor,
               fill: true,
               tension: 0.35,
               borderWidth: 2,
