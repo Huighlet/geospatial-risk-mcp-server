@@ -21,6 +21,10 @@ Engineered to support scientific, Earth-observation-grounded risk analytics adhe
 ![GeoRisk Platform - Agricultural Drought DSS](assets/drought_dss_preview.png)
 *Live Agricultural Drought DSS over Karimama, Benin: NASA SMAP L4 topsoil moisture telemetry (6%), MODIS / VIIRS Terra-Aqua L3 thermal land surface temperature (30°C), Sentinel-2 MSI / MODIS NDVI vegetation health index (0.55), and dynamic agro-climatic sensitivity curve.*
 
+### 3. UN Sendai & OCHA-Compliant Operational Incident SITREP
+![GeoRisk Platform - Operational Incident SITREP](assets/sitrep_preview.png)
+*Automated operational disaster situation report dispatch (SITREP-FL-0741) over Keta, Volta Region, Ghana: Phase 2 Orange Alert readiness phase, physical sensor telemetry chips, 4 sector-specific impact matrices (Life Safety, Stormwater & Civil Works, Logistics & Transport, Agriculture & Soil Health), time-phased action directives (T-0h to T-72h), and 1-click markdown/PDF export.*
+
 ---
 
 ## Key Architecture & Capabilities
@@ -33,14 +37,14 @@ Engineered to support scientific, Earth-observation-grounded risk analytics adhe
 ### 2. Physical Telemetry Auto-Detection & Reverse-Geocoding
 - **One-Click Globe Sampling:** Clicking anywhere on the globe or selecting pre-configured observatories (Keta, Bangkok Chao Phraya, Nairobi Rift Valley, Mekong Delta, Manila Bay) queries high-resolution satellite APIs (Open-Meteo & SRTM).
 - **Simultaneous 3-Slider Synchronization:** Automatically populates terrain elevation, local precipitation, and soil moisture/porosity for the exact clicked coordinates.
-- **Human-Readable Place Names:** Reverse-geocodes raw lat/lon coordinates into administrative names in English (e.g., `Kouroussa Prefecture, Kankan Region, Guinea (11.26°N, 9.99°W)`) directly in the header and precision reticle popup.
+- **Human-Readable Place Names:** Reverse-geocodes raw lat/lon coordinates into administrative names in English (e.g., `Keta, Volta Region, Ghana (5.92°N, 0.99°E)`) directly in the header and precision reticle popup.
 
 ### 3. Dynamic Sensitivity Response Modeling
 - **Topographic Sensitivity Curves:** Dynamically models vulnerability trajectories across 0–240mm precipitation gradients to predict inundation tipping points.
 - **Agro-Climatic Sensitivity Curves:** Graphs drought severity curves against topsoil moisture variations (0–100%) for dry-season crop protection and irrigation planning.
 
 ### 4. UN Sendai & OCHA-Aligned Operational SITREP Dispatch
-- **Bounded Scientific Briefings:** Generates structured emergency situation reports (SITREPs) with incident tracking IDs (e.g., `SITREP-FL-0813`), operational phase banners, and physical sensor telemetry chips.
+- **Bounded Scientific Briefings:** Generates structured emergency situation reports (SITREPs) with incident tracking IDs (e.g., `SITREP-FL-0741`), operational phase banners, and physical sensor telemetry chips.
 - **4-Sector Impact Matrices:** Evaluates specific vulnerabilities across Life Safety, Infrastructure/WASH, Transport Networks, and Agriculture/Food Security.
 - **Phased Operational Timelines:** Establishes action directives from immediate warning (T-0h) through peak operational response (T-24h) to post-impact assessment (T-72h).
 - **1-Click Export:** Copy formatted markdown dispatches directly to the clipboard or generate PDF-ready incident reports.
@@ -77,7 +81,8 @@ geospatial-risk-mcp-server/
 |   +-- test_server.py     # Pytest suite verifying deterministic models & schemas
 |-- assets/
 |   |-- dashboard_preview.png  # Live simulation screenshot (Flood Inundation)
-|   +-- drought_dss_preview.png # Live simulation screenshot (Agricultural Drought)
+|   |-- drought_dss_preview.png # Live simulation screenshot (Agricultural Drought)
+|   +-- sitrep_preview.png     # Live operational disaster SITREP modal
 |-- .github/
 |   +-- workflows/ci.yml   # GitHub Actions CI & Docker test automation
 |-- Dockerfile             # Multi-stage container with automated test verification
