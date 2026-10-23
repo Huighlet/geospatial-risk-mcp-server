@@ -321,48 +321,93 @@ HTML_DASHBOARD = """<!DOCTYPE html>
 
   <!-- Operational Situation Report (Modal) -->
   <div id="ai-modal" class="fixed inset-0 z-[2000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="panel max-w-2xl w-full p-6 rounded-2xl border border-slate-700 shadow-2xl flex flex-col gap-4 animate-in fade-in duration-150">
+    <div class="panel max-w-3xl w-full p-6 rounded-2xl border border-slate-700 shadow-2xl flex flex-col gap-4 animate-in fade-in duration-150 max-h-[90vh]">
+      <!-- Header with SITREP ID & Metadata -->
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div class="flex items-center gap-2.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
           <div>
-            <h3 class="font-bold text-white text-sm md:text-base" id="ai-modal-title">GeoRisk Rapid Assessment & Situation Report</h3>
-            <p class="text-[11px] text-slate-400">UN Sendai Framework Rapid Assessment Protocol</p>
+            <div class="flex items-center gap-2">
+              <h3 class="font-bold text-white text-base" id="ai-modal-title">Operational Disaster Situation Report</h3>
+              <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700" id="ai-sitrep-id">SITREP-FL-0813</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-0.5" id="ai-modal-sub">UN Sendai Framework Incident Command Protocol</p>
           </div>
         </div>
         <button onclick="closeAIModal()" class="text-slate-400 hover:text-white text-base font-bold px-2 py-1 rounded hover:bg-slate-800">✕</button>
       </div>
 
-      <div class="space-y-3 text-xs leading-relaxed max-h-[60vh] overflow-y-auto pr-1 scrollbar-thin">
-        <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
-          <span class="text-slate-400 uppercase font-bold text-[10px] block">Readiness Priority</span>
-          <div class="text-sm font-extrabold text-emerald-400 font-mono mt-0.5" id="ai-priority">--</div>
+      <div class="space-y-4 text-xs leading-relaxed overflow-y-auto pr-1 scrollbar-thin">
+        <!-- Readiness Priority Banner -->
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="text-slate-400 uppercase font-bold text-[10px] block">Operational Readiness Phase</span>
+            <div class="text-sm font-extrabold text-emerald-400 font-mono mt-0.5" id="ai-priority">--</div>
+          </div>
+          <div class="text-right">
+            <span class="text-slate-400 uppercase font-bold text-[10px] block">Calculated Risk Index</span>
+            <div class="text-sm font-extrabold text-white font-mono mt-0.5" id="ai-score-disp">-- / 100</div>
+          </div>
         </div>
 
+        <!-- Executive Operational Summary -->
+        <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
+          <span class="text-slate-300 uppercase font-bold text-[10px] block mb-1">Executive Operational Summary</span>
+          <p class="text-slate-200 leading-normal" id="ai-exec-summary">--</p>
+        </div>
+
+        <!-- Sensor & Physical Grounding Strip -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center" id="ai-sensor-strip">
+          <div class="p-2 rounded-lg bg-slate-950 border border-slate-800">
+            <span class="text-[9px] text-slate-400 block font-semibold">Surface Elevation</span>
+            <span class="font-mono text-cyan-400 font-bold text-xs" id="ai-elev-chip">--</span>
+          </div>
+          <div class="p-2 rounded-lg bg-slate-950 border border-slate-800">
+            <span class="text-[9px] text-slate-400 block font-semibold">24h Precipitation</span>
+            <span class="font-mono text-emerald-400 font-bold text-xs" id="ai-rain-chip">--</span>
+          </div>
+          <div class="p-2 rounded-lg bg-slate-950 border border-slate-800">
+            <span class="text-[9px] text-slate-400 block font-semibold">Soil Porosity</span>
+            <span class="font-mono text-indigo-400 font-bold text-xs" id="ai-soil-chip">--</span>
+          </div>
+          <div class="p-2 rounded-lg bg-slate-950 border border-slate-800">
+            <span class="text-[9px] text-slate-400 block font-semibold">Surface Runoff Factor</span>
+            <span class="font-mono text-amber-400 font-bold text-xs" id="ai-runoff-chip">--</span>
+          </div>
+        </div>
+
+        <!-- Sector-Specific Vulnerability & Tactical Directives -->
         <div>
-          <span class="text-slate-300 uppercase font-bold text-[10px] block mb-1">Directives for Civil Defense</span>
-          <ul class="list-disc pl-4 space-y-1 text-slate-300" id="ai-directives"></ul>
+          <span class="text-slate-300 uppercase font-bold text-[10px] block mb-2">Sector Vulnerability & Tactical Directives</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5" id="ai-sector-grid"></div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 pt-1">
-          <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
-            <span class="text-slate-400 uppercase font-bold text-[10px] block mb-1">Critical Infrastructure Risk</span>
-            <p class="text-slate-300" id="ai-infra">--</p>
-          </div>
-          <div class="p-3 rounded-lg bg-slate-900 border border-slate-800">
-            <span class="text-slate-400 uppercase font-bold text-[10px] block mb-1">Agricultural & Livelihood Impact</span>
-            <p class="text-slate-300" id="ai-agri">--</p>
-          </div>
+        <!-- Time-Phased Operational Action Timeline -->
+        <div>
+          <span class="text-slate-300 uppercase font-bold text-[10px] block mb-2">Time-Phased Operational Action Plan</span>
+          <div class="space-y-1.5" id="ai-timeline-list"></div>
         </div>
 
-        <div class="text-[10px] text-slate-500 border-t border-slate-800 pt-2" id="ai-assurance">
-          Standard: UN Sendai Framework for Disaster Risk Reduction (2015–2030) · Rapid Response Protocol.
+        <div class="text-[10px] text-slate-500 border-t border-slate-800 pt-2 flex justify-between items-center" id="ai-assurance-bar">
+          <span id="ai-assurance">Standard: UN Sendai Framework Priority 4 (Preparedness & Response)</span>
+          <span class="font-mono text-[9px] text-slate-600" id="ai-timestamp">--</span>
         </div>
       </div>
 
-      <button onclick="closeAIModal()" class="w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs transition">
-        Close Briefing
-      </button>
+      <!-- Footer Action Toolbar -->
+      <div class="flex items-center gap-2 pt-2 border-t border-slate-800">
+        <button onclick="copySITREPToClipboard()" id="copy-sitrep-btn" class="flex-1 py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-medium text-xs transition flex items-center justify-center gap-1.5 border border-slate-700">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+          <span id="copy-btn-text">Copy Full SITREP (Markdown)</span>
+        </button>
+        <button onclick="window.print()" class="py-2 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium text-xs transition border border-slate-700 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+          <span>Print / PDF</span>
+        </button>
+        <button onclick="closeAIModal()" class="py-2 px-4 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium text-xs transition">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 
@@ -999,6 +1044,8 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       downloadAnchor.remove();
     }
 
+    let latestSITREPMarkdown = "";
+
     // Operational SITREP Rapid Disaster Assessment Generator
     async function generateSITREPBriefing() {
       const score = parseFloat(document.getElementById('risk-score').innerText) || 50;
@@ -1021,23 +1068,67 @@ HTML_DASHBOARD = """<!DOCTYPE html>
         })
       });
       const data = await res.json();
+      latestSITREPMarkdown = data.raw_markdown_report || "";
 
-      document.getElementById('ai-modal-title').innerText = data.situation_report;
+      document.getElementById('ai-modal-title').innerText = data.situation_report || "Operational SITREP";
+      document.getElementById('ai-sitrep-id').innerText = data.sitrep_id || "SITREP-DISASTER";
+      document.getElementById('ai-modal-sub').innerText = `${currentLocationName} · (${formatCoords(currentLat, currentLon)})`;
       document.getElementById('ai-priority').innerText = data.readiness_priority;
-      document.getElementById('ai-infra').innerText = data.critical_infrastructure_risk;
-      document.getElementById('ai-agri').innerText = data.agricultural_livelihood_impact;
-      document.getElementById('ai-assurance').innerText = data.assurance_note;
+      document.getElementById('ai-score-disp').innerText = `${score.toFixed(1)} / 100 (${severity})`;
+      document.getElementById('ai-exec-summary').innerText = data.executive_summary || "Operational assessment active.";
+      document.getElementById('ai-timestamp').innerText = data.timestamp_utc || "";
+      document.getElementById('ai-assurance').innerText = data.assurance_note || "";
 
-      const directivesUl = document.getElementById('ai-directives');
-      directivesUl.innerHTML = "";
-      data.civil_protection_directives.forEach(item => {
-        const li = document.createElement('li');
-        li.innerText = item;
-        directivesUl.appendChild(li);
+      // Telemetry chips
+      const telem = data.sensor_telemetry || {};
+      document.getElementById('ai-elev-chip').innerText = `${elev} m (SRTM)`;
+      document.getElementById('ai-rain-chip').innerText = `${rain} mm (GPM)`;
+      document.getElementById('ai-soil-chip').innerText = `${soil.toFixed(2)} (USDA)`;
+      document.getElementById('ai-runoff-chip').innerText = telem.surface_runoff_ratio || `${Math.round((1-soil)*100)}%`;
+
+      // Sector-specific vulnerability & tactical directives
+      const sectorGrid = document.getElementById('ai-sector-grid');
+      sectorGrid.innerHTML = "";
+      (data.sector_impacts || []).forEach(sec => {
+        const card = document.createElement('div');
+        card.className = "p-3 rounded-lg bg-slate-900 border border-slate-800 flex flex-col gap-1.5";
+        card.innerHTML = `
+          <div class="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>${sec.sector}</span>
+          </div>
+          <div class="text-[11px] text-red-300/90 leading-tight"><b class="text-slate-400 font-normal">Threat:</b> ${sec.threat}</div>
+          <div class="text-[11px] text-slate-300 leading-tight mt-0.5"><b class="text-emerald-400 font-semibold">Directive:</b> ${sec.protocol}</div>
+        `;
+        sectorGrid.appendChild(card);
+      });
+
+      // Time-phased operational action timeline
+      const timelineList = document.getElementById('ai-timeline-list');
+      timelineList.innerHTML = "";
+      (data.timeline || []).forEach(t => {
+        const row = document.createElement('div');
+        row.className = "p-2 rounded bg-slate-900/80 border border-slate-800/60 flex flex-col md:flex-row md:items-center gap-1 text-[11px]";
+        row.innerHTML = `
+          <span class="font-mono font-bold text-amber-400 shrink-0 min-w-[140px]">${t.window}:</span>
+          <span class="text-slate-300">${t.action}</span>
+        `;
+        timelineList.appendChild(row);
       });
 
       document.getElementById('ai-modal').classList.remove('hidden');
     }
+
+    function copySITREPToClipboard() {
+      if (!latestSITREPMarkdown) return;
+      navigator.clipboard.writeText(latestSITREPMarkdown).then(() => {
+        const textSpan = document.getElementById('copy-btn-text');
+        const orig = textSpan.innerText;
+        textSpan.innerText = "✓ Copied Full SITREP!";
+        setTimeout(() => { textSpan.innerText = orig; }, 2500);
+      });
+    }
+
     const generateAIBriefing = generateSITREPBriefing;
 
     function closeAIModal() {
