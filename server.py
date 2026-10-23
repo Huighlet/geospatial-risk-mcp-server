@@ -123,7 +123,7 @@ def query_bounding_box_risk(
 def get_system_capabilities() -> str:
     """Provides platform specification and compliance documentation."""
     return (
-        "SERVIR-Aligned Geospatial Risk Analytics Engine v1.0.0\n"
+        "GeoRisk Platform Geospatial Risk Analytics Engine v2.4.0\n"
         "Supported Hazards: Flood, Drought, Hydrologic Inundation\n"
         "Data Standards: EPSG:4326 GeoJSON FeatureCollection\n"
         "Execution Mode: Strictly Deterministic (Zero Hallucination)"

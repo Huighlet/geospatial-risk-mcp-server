@@ -1,5 +1,5 @@
 """
-Interactive Geospatial Climate Risk Dashboard (NASA SERVIR Advanced Edition).
+Interactive Geospatial Climate Risk Dashboard (GeoRisk Decision Support System).
 Features:
 - Multi-Hazard Toggle: Flood Inundation vs Agricultural Drought.
 - Climate Change Scenario Presets: Baseline 10-Yr, 2030 Monsoon +1.5C, 2050 Extreme RCP 8.5.
@@ -24,7 +24,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SERVIR Global Risk Platform | Advanced Decision Support</title>
+  <title>GeoRisk Platform | Multi-Hazard Decision Support System</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Leaflet CSS & JS -->
@@ -33,11 +33,24 @@ HTML_DASHBOARD = """<!DOCTYPE html>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    #map { height: 490px; width: 100%; border-radius: 0.75rem; }
+    #map { height: 475px; width: 100%; border-radius: 0.75rem; }
     .panel { background: #0b1120; border: 1px solid #1e293b; }
     .stat-box { background: #070d19; border: 1px solid #1e293b; }
     .scrollbar-thin::-webkit-scrollbar { width: 5px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+
+    /* Dark GIS Leaflet Popup Override */
+    .leaflet-popup-content-wrapper {
+      background: #0b1120 !important;
+      color: #f1f5f9 !important;
+      border: 1px solid #334155 !important;
+      border-radius: 0.6rem !important;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.75) !important;
+    }
+    .leaflet-popup-tip {
+      background: #0b1120 !important;
+      border: 1px solid #334155 !important;
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-emerald-500 selection:text-slate-950">
@@ -50,10 +63,10 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       </div>
       <div>
         <div class="flex items-center gap-2">
-          <h1 class="font-bold text-sm md:text-base text-white tracking-tight">SERVIR Global Risk Platform</h1>
+          <h1 class="font-bold text-sm md:text-base text-white tracking-tight">GeoRisk Platform</h1>
           <span class="text-[10px] font-mono uppercase px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700">DSS v2.4</span>
         </div>
-        <p class="text-[11px] text-slate-400 font-medium">Earth Observation Decision Support · Rapid Multi-Hazard Analytics</p>
+        <p class="text-[11px] text-slate-400 font-medium">Earth Observation Multi-Hazard Intelligence · FastMCP Decision Support</p>
       </div>
     </div>
     
@@ -116,7 +129,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
         </div>
       </div>
 
-      <!-- Climate Change Scenario Selectors (SERVIR Requirement) -->
+      <!-- Climate Change Scenario Selectors (Sendai Framework Projections) -->
       <div class="panel p-3.5 rounded-xl flex flex-col gap-2">
         <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Climate Change Scenario Projections</label>
         <div class="grid grid-cols-3 gap-2">
@@ -153,6 +166,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
               <span id="val-rain" class="text-emerald-400 font-mono font-bold">135 mm</span>
             </div>
             <input type="range" id="input-rain" min="0" max="250" value="135" class="w-full accent-emerald-500 cursor-pointer" oninput="updateValuesAndTrigger()">
+            <div class="text-[9px] text-slate-500 font-mono mt-0.5">Sensor: NASA GPM IMERG Early Run (0.1° × 0.1°)</div>
           </div>
 
           <div>
@@ -161,6 +175,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
               <span id="val-elev" class="text-cyan-400 font-mono font-bold">2.5 m</span>
             </div>
             <input type="range" id="input-elev" min="0" max="100" step="0.5" value="2.5" class="w-full accent-cyan-500 cursor-pointer" oninput="updateValuesAndTrigger()">
+            <div class="text-[9px] text-slate-500 font-mono mt-0.5">Sensor: NASADEM / SRTM v3 (30m HGT Elevation)</div>
           </div>
 
           <div>
@@ -169,6 +184,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
               <span id="val-soil" class="text-indigo-400 font-mono font-bold">0.35</span>
             </div>
             <input type="range" id="input-soil" min="0.0" max="1.0" step="0.05" value="0.35" class="w-full accent-indigo-500 cursor-pointer" oninput="updateValuesAndTrigger()">
+            <div class="text-[9px] text-slate-500 font-mono mt-0.5">Parameter: USDA-NRCS Hydrologic Runoff Curve</div>
           </div>
         </div>
 
@@ -180,7 +196,10 @@ HTML_DASHBOARD = """<!DOCTYPE html>
               <span id="val-moist" class="text-amber-400 font-mono font-bold">18 %</span>
             </div>
             <input type="range" id="input-moist" min="0" max="100" value="18" class="w-full accent-amber-500 cursor-pointer" oninput="updateValuesAndTrigger()">
-            <div class="flex justify-between text-[10px] text-slate-500 mt-0.5"><span>0% (Arid)</span><span>50% (Adequate)</span><span>100% (Saturated)</span></div>
+            <div class="flex justify-between text-[9px] text-slate-500 font-mono mt-0.5">
+              <span>Sensor: NASA SMAP L4 Global (9 km)</span>
+              <span class="text-slate-600">0% Arid · 100% Saturated</span>
+            </div>
           </div>
 
           <div>
@@ -189,6 +208,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
               <span id="val-temp" class="text-red-400 font-mono font-bold">38 °C</span>
             </div>
             <input type="range" id="input-temp" min="15" max="55" value="38" class="w-full accent-red-500 cursor-pointer" oninput="updateValuesAndTrigger()">
+            <div class="text-[9px] text-slate-500 font-mono mt-0.5">Sensor: MODIS / VIIRS Terra-Aqua L3 Thermal (1 km)</div>
           </div>
 
           <div>
@@ -197,6 +217,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
               <span id="val-ndvi" class="text-emerald-400 font-mono font-bold">0.24</span>
             </div>
             <input type="range" id="input-ndvi" min="-0.2" max="1.0" step="0.02" value="0.24" class="w-full accent-emerald-500 cursor-pointer" oninput="updateValuesAndTrigger()">
+            <div class="text-[9px] text-slate-500 font-mono mt-0.5">Sensor: Sentinel-2 MSI / MODIS 16-Day NDVI Composite</div>
           </div>
         </div>
       </div>
@@ -240,7 +261,24 @@ HTML_DASHBOARD = """<!DOCTYPE html>
     <div class="lg:col-span-7 flex flex-col gap-3.5">
       
       <!-- Interactive Map Card -->
-      <div class="panel p-2 rounded-xl relative shadow-xl overflow-hidden">
+      <div class="panel p-2 rounded-xl relative shadow-xl overflow-hidden flex flex-col gap-1.5">
+        <div class="flex items-center justify-between px-2 pt-0.5 text-xs text-slate-400">
+          <div class="flex items-center gap-2.5">
+            <span class="font-bold text-[10px] text-slate-300 uppercase tracking-wider">Spatial Risk Domain</span>
+            <div class="flex items-center gap-1.5 bg-slate-900/90 px-2 py-0.5 rounded border border-slate-800 text-[10px]">
+              <span class="text-slate-500 uppercase">Alpha:</span>
+              <input type="range" id="opacity-slider" min="10" max="90" value="45" class="w-16 accent-emerald-500 cursor-pointer" oninput="setGridOpacity(this.value)">
+              <span id="val-opacity" class="font-mono text-slate-300">45%</span>
+            </div>
+            <button id="toggle-grid-btn" onclick="toggleGridVisibility()" class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+              Hide Grid
+            </button>
+          </div>
+          <div class="hidden sm:flex items-center gap-1 font-mono text-[10px] text-slate-400">
+            <span class="text-slate-500 uppercase">Cursor:</span>
+            <span id="cursor-coords" class="text-emerald-400 font-semibold">05.9200°N, 00.9900°E</span>
+          </div>
+        </div>
         <div id="map"></div>
         
         <!-- Map Legend -->
@@ -277,7 +315,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
         <div class="flex items-center gap-2.5">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
           <div>
-            <h3 class="font-bold text-white text-sm md:text-base" id="ai-modal-title">SERVIR Rapid Disaster Assessment</h3>
+            <h3 class="font-bold text-white text-sm md:text-base" id="ai-modal-title">GeoRisk Rapid Assessment & Situation Report</h3>
             <p class="text-[11px] text-slate-400">UN Sendai Framework Rapid Assessment Protocol</p>
           </div>
         </div>
@@ -359,8 +397,72 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       "Standard OpenStreetMap": osm
     }, null, { position: 'topright' }).addTo(map);
 
+    // GIS Standard Metric Scale Bar
+    L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
+
+    // Live Mouse Cursor Coordinates Tracking
+    map.on('mousemove', function(e) {
+      const norm = normalizeCoords(e.latlng.lat, e.latlng.lng);
+      const latDir = norm.lat >= 0 ? 'N' : 'S';
+      const lonDir = norm.lon >= 0 ? 'E' : 'W';
+      const el = document.getElementById('cursor-coords');
+      if (el) {
+        el.innerText = `${Math.abs(norm.lat).toFixed(4)}°${latDir}, ${Math.abs(norm.lon).toFixed(4)}°${lonDir}`;
+      }
+    });
+
+    let currentOpacity = 0.45;
+    let gridVisible = true;
+
+    function setGridOpacity(val) {
+      currentOpacity = parseFloat(val) / 100.0;
+      document.getElementById('val-opacity').innerText = Math.round(val) + '%';
+      if (geojsonLayer) {
+        geojsonLayer.eachLayer(function(layer) {
+          layer.setStyle({
+            fillOpacity: gridVisible ? currentOpacity : 0.0,
+            opacity: gridVisible ? Math.min(1.0, currentOpacity + 0.3) : 0.0
+          });
+        });
+      }
+    }
+
+    function toggleGridVisibility() {
+      gridVisible = !gridVisible;
+      const btn = document.getElementById('toggle-grid-btn');
+      if (gridVisible) {
+        btn.innerText = "Hide Grid";
+        btn.className = "px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition";
+      } else {
+        btn.innerText = "Show Grid";
+        btn.className = "px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-950 hover:bg-emerald-900 text-emerald-400 border border-emerald-700 transition";
+      }
+      if (geojsonLayer) {
+        geojsonLayer.eachLayer(function(layer) {
+          layer.setStyle({
+            fillOpacity: gridVisible ? currentOpacity : 0.0,
+            opacity: gridVisible ? Math.min(1.0, currentOpacity + 0.3) : 0.0
+          });
+        });
+      }
+    }
+
+    // Precision Vector Reticle (Replaces cartoon blue pin)
+    const precisionReticle = L.divIcon({
+      className: 'custom-reticle',
+      html: `
+        <div style="position: relative; width: 28px; height: 28px; transform: translate(-14px, -14px); pointer-events: none;">
+          <div style="position: absolute; inset: 0; border: 1.5px solid #10b981; border-radius: 9999px; background: rgba(16, 185, 129, 0.15);"></div>
+          <div style="position: absolute; top: 13px; left: 2px; width: 24px; height: 1.5px; background: #10b981;"></div>
+          <div style="position: absolute; top: 2px; left: 13px; width: 1.5px; height: 24px; background: #10b981;"></div>
+          <div style="position: absolute; top: 11px; left: 11px; width: 6px; height: 6px; background: #34d399; border-radius: 9999px; box-shadow: 0 0 6px #10b981;"></div>
+        </div>
+      `,
+      iconSize: [0, 0]
+    });
+
     let geojsonLayer = null;
-    let targetMarker = L.marker([currentLat, currentLon]).addTo(map).bindPopup("Current Risk Target");
+    let targetMarker = L.marker([currentLat, currentLon], { icon: precisionReticle }).addTo(map).bindPopup("Current Risk Target");
 
     // Click anywhere on map
     map.on('click', function(e) {
@@ -607,37 +709,34 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           style: function(feature) {
             const score = feature.properties.risk_score;
             let color = '#10b981';
-            let opacity = 0.35;
             if (score >= 75) {
               color = '#ef4444';
-              opacity = 0.55;
             } else if (score >= 50) {
               color = '#f97316';
-              opacity = 0.45;
             } else if (score >= 25) {
               color = '#f59e0b';
-              opacity = 0.35;
             }
             return {
               color: color,
-              weight: 2,
-              opacity: 0.9,
+              weight: 1.5,
+              opacity: gridVisible ? Math.min(1.0, currentOpacity + 0.3) : 0.0,
               fillColor: color,
-              fillOpacity: opacity
+              fillOpacity: gridVisible ? currentOpacity : 0.0
             };
           },
           onEachFeature: function(feature, layer) {
             layer.bindPopup(`
               <div class="font-sans text-xs p-1">
-                <div class="font-bold text-slate-900 border-b pb-1 mb-1.5 flex justify-between items-center">
-                  <span>${feature.properties.cell_id}</span>
-                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${feature.properties.severity === 'CRITICAL' ? 'bg-red-600' : feature.properties.severity === 'HIGH' ? 'bg-orange-500' : feature.properties.severity === 'MODERATE' ? 'bg-amber-500' : 'bg-emerald-600'}">${feature.properties.severity}</span>
+                <div class="font-bold text-white border-b border-slate-700 pb-1 mb-1.5 flex justify-between items-center gap-2">
+                  <span class="font-mono text-[11px] text-emerald-400 font-bold">${feature.properties.cell_id}</span>
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-white ${feature.properties.severity === 'CRITICAL' ? 'bg-red-600' : feature.properties.severity === 'HIGH' ? 'bg-orange-500' : feature.properties.severity === 'MODERATE' ? 'bg-amber-500' : 'bg-emerald-600'}">${feature.properties.severity}</span>
                 </div>
-                <div class="space-y-0.5 text-slate-700">
-                  <div><b>Risk Index:</b> ${feature.properties.risk_score} / 100</div>
-                  <div><b>Hazard:</b> ${feature.properties.hazard_type.toUpperCase()}</div>
+                <div class="space-y-1 text-slate-300">
+                  <div class="flex justify-between"><span>Risk Index:</span> <b class="text-white font-mono">${feature.properties.risk_score} / 100</b></div>
+                  <div class="flex justify-between"><span>Hazard:</span> <span class="font-mono uppercase text-[10px] text-slate-400">${feature.properties.hazard_type}</span></div>
+                  <div class="flex justify-between"><span>Centroid:</span> <span class="font-mono text-slate-400 text-[10px]">${feature.properties.centroid.lat}°N, ${feature.properties.centroid.lon}°E</span></div>
                 </div>
-                <div class="mt-2 text-[11px] text-slate-600 italic bg-slate-100 p-1.5 rounded border border-slate-200">
+                <div class="mt-2 text-[10px] text-slate-300 leading-normal bg-slate-900/90 p-2 rounded border border-slate-800">
                   ${feature.properties.guidance}
                 </div>
               </div>
@@ -731,7 +830,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(latestGeoJSON, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `servir_${activeHazard}_layer_${currentLat.toFixed(2)}_${currentLon.toFixed(2)}.geojson`);
+      downloadAnchor.setAttribute("download", `georisk_${activeHazard}_layer_${currentLat.toFixed(2)}_${currentLon.toFixed(2)}.geojson`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -880,7 +979,7 @@ app = Starlette(
 
 if __name__ == "__main__":
     print("\n=======================================================")
-    print("[*] SERVIR Decision Support System (DSS) Starting...")
+    print("[*] GeoRisk Decision Support System (DSS) Starting...")
     print(" -> Dashboard URL: http://localhost:8000")
     print("=======================================================\n")
     uvicorn.run(app, host="127.0.0.1", port=8000)

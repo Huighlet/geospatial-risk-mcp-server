@@ -181,7 +181,7 @@ class RiskEngine:
                             type="Feature",
                             geometry=GeoJSONGeometry(type="Polygon", coordinates=polygon_coords),
                             properties={
-                                "cell_id": f"AGRI_ZONE_{cell_id:03d}",
+                                "cell_id": f"QUAD-R{i+1}C{j+1}",
                                 "hazard_type": "drought",
                                 "risk_score": cell_result["composite_drought_index"],
                                 "severity": cell_result["classification"],
@@ -211,7 +211,7 @@ class RiskEngine:
                             type="Feature",
                             geometry=GeoJSONGeometry(type="Polygon", coordinates=polygon_coords),
                             properties={
-                                "cell_id": f"HYDRO_ZONE_{cell_id:03d}",
+                                "cell_id": f"QUAD-R{i+1}C{j+1}",
                                 "hazard_type": "flood",
                                 "risk_score": cell_result["flood_vulnerability_index"],
                                 "severity": cell_result["severity_level"],
@@ -232,7 +232,7 @@ class RiskEngine:
                 "hazard_evaluated": hazard_type,
                 "grid_resolution": f"{steps}x{steps}",
                 "cell_count": len(features),
-                "data_source": "SERVIR-Aligned Deterministic Risk Analytics Service",
+                "data_source": "GeoRisk Multi-Hazard Analytics Engine (GPM/SMAP/SRTM Aligned)",
             },
         )
 
@@ -285,7 +285,7 @@ class RiskEngine:
             agri_impact = "Optimal moisture retention for crop germination."
 
         return {
-            "situation_report": f"SERVIR Climate Advisory for {location_name}",
+            "situation_report": f"Rapid Disaster Risk Assessment: {location_name}",
             "hazard_type": hazard.upper(),
             "quantitative_score": score,
             "severity_classification": severity,
@@ -293,5 +293,5 @@ class RiskEngine:
             "civil_protection_directives": civil_actions,
             "critical_infrastructure_risk": infrastructure_impact,
             "agricultural_livelihood_impact": agri_impact,
-            "assurance_note": "Generated in accordance with Sendai Framework standards. All figures deterministically calculated by SERVIR Risk Engine."
+            "assurance_note": "Generated in accordance with Sendai Framework standards. Deterministically calculated by GeoRisk Analytics Engine."
         }

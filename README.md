@@ -1,4 +1,4 @@
-# Geospatial Climate Risk MCP Server
+# GeoRisk Platform: Geospatial Climate Risk MCP Server & DSS
 
 [![CI & Docker Verification](https://github.com/Huighlet/geospatial-risk-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/Huighlet/geospatial-risk-mcp-server/actions/workflows/ci.yml)
 [![FastMCP](https://img.shields.io/badge/Protocol-Model%20Context%20Protocol-emerald.svg)](https://modelcontextprotocol.io)
@@ -7,18 +7,18 @@
 
 A production-grade Python **Model Context Protocol (MCP)** server and interactive decision-support platform providing deterministic geospatial analytics, flood vulnerability indexing, and RFC 7946 GeoJSON bounding-box hazard partitions for LLM agents, GIS analysts, and disaster response teams.
 
-Engineered to support scientific, Earth-observation-grounded risk analytics adhering to the **Sendai Framework for Disaster Risk Reduction** and **SERVIR Global Risk Platform (GRP)** design standards.
+Engineered to support scientific, Earth-observation-grounded risk analytics adhering to the **Sendai Framework for Disaster Risk Reduction** and open geospatial decision-support standards.
 
 ---
 
-## 📸 Interactive Web Map Decision Platform
+## Interactive Web Map Decision Platform
 
-![SERVIR Climate Risk Platform Interactive Dashboard](assets/dashboard_preview.png)
+![GeoRisk Platform Interactive Decision Support System](assets/dashboard_preview.png)
 *Live interactive hazard simulation over Keta Lagoon (Volta Region, Ghana) showing real-time 81.3 Critical Flood Inundation and dynamic RFC 7946 GeoJSON polygon styling.*
 
 ---
 
-## 🌟 Key Architecture & Capabilities
+## Key Architecture & Capabilities
 
 ### 1. Strict Deterministic Scientific Engine
 - **Decoupled Analytics:** Quantitative hydrologic and topographic calculations run inside approved deterministic services. The LLM explains and guides, but never hallucinates mathematical risk indices.
@@ -36,7 +36,7 @@ Engineered to support scientific, Earth-observation-grounded risk analytics adhe
 
 ---
 
-## 🛠️ Registered MCP Tools
+## Registered MCP Tools
 
 | Tool Name | Input Parameters | Output |
 | :--- | :--- | :--- |
@@ -46,7 +46,7 @@ Engineered to support scientific, Earth-observation-grounded risk analytics adhe
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 geospatial-risk-mcp-server/
@@ -68,7 +68,7 @@ geospatial-risk-mcp-server/
 
 ---
 
-## 🚀 Quickstart
+## Quickstart
 
 ### 1. Launch the Interactive Web Dashboard
 ```bash
@@ -84,7 +84,7 @@ pip install -r requirements.txt
 # Run the live map dashboard
 python web_app.py
 ```
-👉 Open **`http://localhost:8000`** in your browser.
+Access the live map interface at **`http://localhost:8000`** in your browser.
 
 ---
 
@@ -111,5 +111,5 @@ pytest tests/ -v
 
 ---
 
-## 📄 License
+## License
 MIT License
