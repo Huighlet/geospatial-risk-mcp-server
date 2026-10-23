@@ -2,9 +2,9 @@
 Interactive Geospatial Climate Risk Dashboard (Global Multi-Region Edition).
 Features:
 - Global English Map Tiles (Esri World Street Map & Satellite).
-- Multi-Country SERVIR / UN Priority Hub Presets.
-- Interactive Map Click (drop grid anywhere on Earth).
-- Real-time Slider-driven GeoJSON Polygon Coloring (Green -> Orange -> Red).
+- Search Any City / Place Name (Nominatim Global Geocoder).
+- Click Anywhere on Map with robust 360-degree Longitude Normalization.
+- Real-time Slider-driven GeoJSON Hazard Polygon Coloring.
 """
 
 import sys
@@ -63,22 +63,44 @@ HTML_DASHBOARD = """<!DOCTYPE html>
     <!-- Left Sidebar: Controls & Analytics -->
     <div class="lg:col-span-4 flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-104px)] pr-1">
       
-      <!-- Target Region Selection -->
+      <!-- Place Search & Hub Presets -->
       <div class="glass p-5 rounded-2xl flex flex-col gap-3">
         <div class="flex items-center justify-between">
-          <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Select Region / Hub</label>
-          <span class="text-[11px] text-emerald-400 font-medium">Or Click Anywhere on Map</span>
+          <label class="text-xs font-bold text-slate-300 uppercase tracking-wider">Search Any Location</label>
+          <span id="search-status" class="text-[11px] text-emerald-400 font-medium">Global Geocoder</span>
         </div>
-        <select id="region-select" onchange="changeRegion()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer">
-          <option value="bangkok">Thailand -- Bangkok Lowland Basin (13.75N, 100.50E)</option>
-          <option value="vietnam">Vietnam -- Mekong Delta Floodplains (10.04N, 105.78E)</option>
-          <option value="philippines">Philippines -- Manila Coastal Typhoon Zone (14.59N, 120.98E)</option>
-          <option value="kenya">Kenya -- Rift Valley & Nairobi Basin (-1.29S, 36.82E)</option>
-          <option value="ghana">Ghana -- Accra Coastal Plains & Volta Basin (5.60N, -0.18W)</option>
-          <option value="bangladesh">Bangladesh -- Sundarbans Lowland Delta (22.50N, 89.50E)</option>
-        </select>
-        <p class="text-[11px] text-slate-400 leading-relaxed">
-          Tip: You can click anywhere on the globe to analyze flood vulnerability for that exact spot.
+        
+        <!-- Search Input Bar -->
+        <div class="flex gap-2">
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Type city or place (e.g. Accra, Kumasi, Nairobi, Tokyo)..." 
+            class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            onkeydown="if(event.key === 'Enter') searchLocation()"
+          />
+          <button 
+            onclick="searchLocation()" 
+            class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center justify-center">
+            Find
+          </button>
+        </div>
+
+        <!-- Preset Dropdown -->
+        <div class="mt-1">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Or Quick-Select UN/SERVIR Hub</label>
+          <select id="region-select" onchange="changeRegion()" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer">
+            <option value="bangkok">Thailand -- Bangkok Lowland Basin (13.75N, 100.50E)</option>
+            <option value="vietnam">Vietnam -- Mekong Delta Floodplains (10.04N, 105.78E)</option>
+            <option value="philippines">Philippines -- Manila Coastal Typhoon Zone (14.59N, 120.98E)</option>
+            <option value="kenya">Kenya -- Rift Valley & Nairobi Basin (-1.29S, 36.82E)</option>
+            <option value="ghana">Ghana -- Accra Coastal Plains & Volta Basin (5.60N, -0.18W)</option>
+            <option value="bangladesh">Bangladesh -- Sundarbans Lowland Delta (22.50N, 89.50E)</option>
+          </select>
+        </div>
+        
+        <p class="text-[11px] text-slate-400 leading-relaxed border-t border-slate-800/80 pt-2">
+          💡 <b>Interactive Map:</b> Click anywhere on the map to set a custom analysis point.
         </p>
       </div>
 
@@ -86,7 +108,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       <div class="glass p-5 rounded-2xl flex flex-col gap-4">
         <div class="border-b border-slate-800 pb-2 flex items-center justify-between">
           <h2 class="font-bold text-xs text-slate-200 uppercase tracking-wider">Environmental Simulation Inputs</h2>
-          <span class="text-[10px] text-slate-400" id="current-coords">Lat: 13.75 | Lon: 100.50</span>
+          <span class="text-[10px] text-emerald-400 font-mono" id="current-coords">Lat: 13.75 | Lon: 100.50</span>
         </div>
 
         <!-- Rainfall Slider -->
@@ -99,7 +121,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
           <div class="flex justify-between text-[10px] text-slate-500 mt-0.5">
             <span>0 mm (Dry)</span>
             <span>125 mm (Heavy)</span>
-            <span>250 mm (Extreme Catastrophe)</span>
+            <span>250 mm (Extreme)</span>
           </div>
         </div>
 
@@ -185,19 +207,26 @@ HTML_DASHBOARD = """<!DOCTYPE html>
     let currentLat = 13.7563;
     let currentLon = 100.5018;
 
+    // Helper: Normalize longitude to [-180, 180] and clamp latitude to [-85, 85]
+    function normalizeCoords(lat, lon) {
+      let normLon = ((lon + 180) % 360 + 360) % 360 - 180;
+      let clampLat = Math.max(-85, Math.min(85, lat));
+      return { lat: clampLat, lon: normLon };
+    }
+
     // Initialize Leaflet Map
-    const map = L.map('map').setView([currentLat, currentLon], 9);
+    const map = L.map('map', { worldCopyJump: true }).setView([currentLat, currentLon], 9);
     
-    // 1. ESRI World Street Map (100% English Global Labels, Zero Watermark, Fast)
+    // 1. ESRI World Street Map (English Labels Globally)
     const englishStreets = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom'
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, TomTom'
     }).addTo(map);
 
     // 2. ESRI High-Res Satellite Imagery
     const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: 'Tiles &copy; Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, GIS User Community'
+      attribution: 'Tiles &copy; Esri, i-cubed, USDA, USGS, AEX, GeoEye, GIS User Community'
     });
 
     // 3. OpenStreetMap
@@ -218,13 +247,50 @@ HTML_DASHBOARD = """<!DOCTYPE html>
 
     // Click anywhere on map to analyze that location!
     map.on('click', function(e) {
-      currentLat = e.latlng.lat;
-      currentLon = e.latlng.lng;
-      targetMarker.setLatLng(e.latlng).bindPopup(`Custom Target: ${currentLat.toFixed(3)}N, ${currentLon.toFixed(3)}E`).openPopup();
+      const norm = normalizeCoords(e.latlng.lat, e.latlng.lng);
+      currentLat = norm.lat;
+      currentLon = norm.lon;
+
+      targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`Target: ${currentLat.toFixed(3)}N, ${currentLon.toFixed(3)}E`).openPopup();
       document.getElementById('current-coords').innerText = `Lat: ${currentLat.toFixed(2)} | Lon: ${currentLon.toFixed(2)}`;
-      document.getElementById('region-select').value = ""; // clear preset
+      document.getElementById('region-select').value = ""; // clear preset dropdown
+      document.getElementById('search-status').innerText = "Target Selected";
       runSimulation();
     });
+
+    // Search Location by Name via Nominatim Geocoding API
+    async function searchLocation() {
+      const query = document.getElementById('search-input').value.trim();
+      if (!query) return;
+
+      const statusEl = document.getElementById('search-status');
+      statusEl.innerText = "Searching...";
+
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const results = await response.json();
+
+        if (results && results.length > 0) {
+          const top = results[0];
+          const norm = normalizeCoords(parseFloat(top.lat), parseFloat(top.lon));
+          currentLat = norm.lat;
+          currentLon = norm.lon;
+
+          map.flyTo([currentLat, currentLon], 10);
+          targetMarker.setLatLng([currentLat, currentLon]).bindPopup(`<b>${top.display_name.split(',')[0]}</b><br><span class="text-[11px] text-slate-500">${top.display_name}</span>`).openPopup();
+          
+          document.getElementById('current-coords').innerText = `Lat: ${currentLat.toFixed(2)} | Lon: ${currentLon.toFixed(2)}`;
+          statusEl.innerText = `Located: ${top.display_name.split(',')[0]}`;
+          
+          runSimulation();
+        } else {
+          statusEl.innerText = "Location not found. Try another city.";
+        }
+      } catch (err) {
+        console.error("Geocoding error:", err);
+        statusEl.innerText = "Search service unavailable.";
+      }
+    }
 
     function changeRegion() {
       const selected = document.getElementById('region-select').value;
@@ -239,6 +305,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       map.flyTo([currentLat, currentLon], 9);
       targetMarker.setLatLng([currentLat, currentLon]).bindPopup(r.name).openPopup();
       document.getElementById('current-coords').innerText = `Lat: ${currentLat.toFixed(2)} | Lon: ${currentLon.toFixed(2)}`;
+      document.getElementById('search-status').innerText = r.name;
       
       updateValuesAndTrigger();
     }
@@ -250,7 +317,7 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       document.getElementById('val-soil').innerText = document.getElementById('input-soil').value;
       
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(runSimulation, 60); // 60ms debounce for smooth slider feel
+      debounceTimer = setTimeout(runSimulation, 50); // fast 50ms response
     }
 
     async function runSimulation() {
@@ -258,104 +325,133 @@ HTML_DASHBOARD = """<!DOCTYPE html>
       const elev = parseFloat(document.getElementById('input-elev').value);
       const soil = parseFloat(document.getElementById('input-soil').value);
 
-      // Call Backend API
-      const res = await fetch('/api/flood-risk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          latitude: currentLat,
-          longitude: currentLon,
-          elevation_meters: elev,
-          precipitation_mm: rain,
-          soil_absorption_rate: soil
-        })
-      });
-      const data = await res.json();
+      try {
+        // 1. Call Backend API for Core Metrics
+        const res = await fetch('/api/flood-risk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            latitude: currentLat,
+            longitude: currentLon,
+            elevation_meters: elev,
+            precipitation_mm: rain,
+            soil_absorption_rate: soil
+          })
+        });
+        
+        if (!res.ok) {
+          console.error("Backend error:", await res.text());
+          return;
+        }
 
-      // Update Telemetry Card
-      document.getElementById('risk-score').innerText = data.flood_vulnerability_index.toFixed(1);
-      document.getElementById('risk-action').innerText = data.operational_guidance;
-      
-      const badge = document.getElementById('risk-badge');
-      badge.innerText = data.severity_level;
-      if (data.severity_level === 'CRITICAL') {
-        badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/50 animate-pulse';
-      } else if (data.severity_level === 'HIGH') {
-        badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/50';
-      } else if (data.severity_level === 'MODERATE') {
-        badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/50';
-      } else {
-        badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/50';
+        const data = await res.json();
+
+        // Update Telemetry Card
+        document.getElementById('risk-score').innerText = (data.flood_vulnerability_index || 0).toFixed(1);
+        document.getElementById('risk-action').innerText = data.operational_guidance || "Normal monitoring.";
+        
+        const badge = document.getElementById('risk-badge');
+        badge.innerText = data.severity_level || "UNKNOWN";
+        if (data.severity_level === 'CRITICAL') {
+          badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/50 animate-pulse';
+        } else if (data.severity_level === 'HIGH') {
+          badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/50';
+        } else if (data.severity_level === 'MODERATE') {
+          badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/50';
+        } else {
+          badge.className = 'px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/50';
+        }
+
+        // 2. Draw and color the GeoJSON polygons based on these exact numbers
+        await drawHazardZones(rain, elev, soil);
+      } catch (err) {
+        console.error("Simulation error:", err);
       }
-
-      // Draw and color the GeoJSON polygons based on these exact numbers
-      drawHazardZones(rain, elev, soil);
     }
 
     async function drawHazardZones(rain, elev, soil) {
-      // Dynamic bounding box around current target coordinates (+/- 0.65 degrees)
-      const res = await fetch('/api/bounding-box-geojson', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          min_lat: currentLat - 0.65,
-          min_lon: currentLon - 0.75,
-          max_lat: currentLat + 0.65,
-          max_lon: currentLon + 0.75,
-          precipitation_mm: rain,
-          elevation_meters: elev,
-          soil_rate: soil
-        })
-      });
-      const geojson = await res.json();
+      try {
+        const norm = normalizeCoords(currentLat, currentLon);
+        const minLat = Math.max(-85, norm.lat - 0.65);
+        const maxLat = Math.min(85, norm.lat + 0.65);
+        let minLon = norm.lon - 0.75;
+        let maxLon = norm.lon + 0.75;
 
-      if (geojsonLayer) {
-        map.removeLayer(geojsonLayer);
-      }
+        // Ensure valid longitude bounds
+        if (minLon < -180) minLon = -180;
+        if (maxLon > 180) maxLon = 180;
 
-      geojsonLayer = L.geoJSON(geojson, {
-        style: function(feature) {
-          const score = feature.properties.risk_score;
-          let color = '#10b981'; // Green (Low)
-          let opacity = 0.35;
-          if (score >= 75) {
-            color = '#ef4444'; // Red (Critical)
-            opacity = 0.55;
-          } else if (score >= 50) {
-            color = '#f97316'; // Orange (High)
-            opacity = 0.45;
-          } else if (score >= 25) {
-            color = '#f59e0b'; // Amber (Moderate)
-            opacity = 0.35;
-          }
-          
-          return {
-            color: color,
-            weight: 2.5,
-            opacity: 0.9,
-            fillColor: color,
-            fillOpacity: opacity
-          };
-        },
-        onEachFeature: function(feature, layer) {
-          layer.bindPopup(`
-            <div class="font-sans text-xs p-1">
-              <div class="font-bold text-slate-900 border-b pb-1 mb-1.5 flex justify-between items-center">
-                <span>${feature.properties.cell_id}</span>
-                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${feature.properties.severity === 'CRITICAL' ? 'bg-red-600' : feature.properties.severity === 'HIGH' ? 'bg-orange-500' : feature.properties.severity === 'MODERATE' ? 'bg-amber-500' : 'bg-emerald-600'}">${feature.properties.severity}</span>
-              </div>
-              <div class="space-y-0.5 text-slate-700">
-                <div><b>Risk Score:</b> ${feature.properties.risk_score} / 100</div>
-                <div><b>Cell Elevation:</b> ${feature.properties.elevation_m} m</div>
-                <div><b>Rainfall:</b> ${feature.properties.precipitation_mm} mm</div>
-              </div>
-              <div class="mt-2 text-[11px] text-slate-600 italic bg-slate-100 p-1.5 rounded border border-slate-200">
-                ${feature.properties.guidance}
-              </div>
-            </div>
-          `);
+        const res = await fetch('/api/bounding-box-geojson', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            min_lat: minLat,
+            min_lon: minLon,
+            max_lat: maxLat,
+            max_lon: maxLon,
+            precipitation_mm: rain,
+            elevation_meters: elev,
+            soil_rate: soil
+          })
+        });
+
+        if (!res.ok) {
+          console.error("GeoJSON error:", await res.text());
+          return;
         }
-      }).addTo(map);
+
+        const geojson = await res.json();
+
+        if (geojsonLayer) {
+          map.removeLayer(geojsonLayer);
+        }
+
+        geojsonLayer = L.geoJSON(geojson, {
+          style: function(feature) {
+            const score = feature.properties.risk_score;
+            let color = '#10b981'; // Green (Low)
+            let opacity = 0.35;
+            if (score >= 75) {
+              color = '#ef4444'; // Red (Critical)
+              opacity = 0.55;
+            } else if (score >= 50) {
+              color = '#f97316'; // Orange (High)
+              opacity = 0.45;
+            } else if (score >= 25) {
+              color = '#f59e0b'; // Amber (Moderate)
+              opacity = 0.35;
+            }
+            
+            return {
+              color: color,
+              weight: 2.5,
+              opacity: 0.9,
+              fillColor: color,
+              fillOpacity: opacity
+            };
+          },
+          onEachFeature: function(feature, layer) {
+            layer.bindPopup(`
+              <div class="font-sans text-xs p-1">
+                <div class="font-bold text-slate-900 border-b pb-1 mb-1.5 flex justify-between items-center">
+                  <span>${feature.properties.cell_id}</span>
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white ${feature.properties.severity === 'CRITICAL' ? 'bg-red-600' : feature.properties.severity === 'HIGH' ? 'bg-orange-500' : feature.properties.severity === 'MODERATE' ? 'bg-amber-500' : 'bg-emerald-600'}">${feature.properties.severity}</span>
+                </div>
+                <div class="space-y-0.5 text-slate-700">
+                  <div><b>Risk Score:</b> ${feature.properties.risk_score} / 100</div>
+                  <div><b>Cell Elevation:</b> ${feature.properties.elevation_m} m</div>
+                  <div><b>Rainfall:</b> ${feature.properties.precipitation_mm} mm</div>
+                </div>
+                <div class="mt-2 text-[11px] text-slate-600 italic bg-slate-100 p-1.5 rounded border border-slate-200">
+                  ${feature.properties.guidance}
+                </div>
+              </div>
+            `);
+          }
+        }).addTo(map);
+      } catch (err) {
+        console.error("drawHazardZones error:", err);
+      }
     }
 
     // Initial calculation on page load
@@ -370,6 +466,14 @@ async def homepage(request: Request):
 
 async def api_flood_risk(request: Request):
     body = await request.json()
+    # Normalize longitude & clamp latitude so out-of-bounds never throws 500
+    lat = float(body.get("latitude", 0.0))
+    lon = float(body.get("longitude", 0.0))
+    norm_lon = ((lon + 180.0) % 360.0 + 360.0) % 360.0 - 180.0
+    clamp_lat = max(-90.0, min(90.0, lat))
+    body["latitude"] = clamp_lat
+    body["longitude"] = norm_lon
+    
     validated = FloodVulnerabilityInput(**body)
     return JSONResponse(RiskEngine.calculate_flood_index(validated))
 
@@ -380,13 +484,23 @@ async def api_drought_risk(request: Request):
 
 async def api_bounding_box(request: Request):
     body = await request.json()
-    bbox_data = {
-        "min_lat": body["min_lat"],
-        "min_lon": body["min_lon"],
-        "max_lat": body["max_lat"],
-        "max_lon": body["max_lon"],
-    }
-    validated_bbox = BoundingBox(**bbox_data)
+    min_lat = max(-90.0, min(90.0, float(body["min_lat"])))
+    max_lat = max(-90.0, min(90.0, float(body["max_lat"])))
+    min_lon = max(-180.0, min(180.0, float(body["min_lon"])))
+    max_lon = max(-180.0, min(180.0, float(body["max_lon"])))
+
+    # Ensure max >= min
+    if max_lat < min_lat:
+        min_lat, max_lat = max_lat, min_lat
+    if max_lon < min_lon:
+        min_lon, max_lon = max_lon, min_lon
+
+    validated_bbox = BoundingBox(
+        min_lat=min_lat,
+        min_lon=min_lon,
+        max_lat=max_lat,
+        max_lon=max_lon,
+    )
     precipitation_mm = float(body.get("precipitation_mm", 135.0))
     elevation_meters = float(body.get("elevation_meters", 2.5))
     soil_rate = float(body.get("soil_rate", 0.35))
